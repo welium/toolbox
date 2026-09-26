@@ -291,6 +291,35 @@
   display: none;
 }
 
+.tool-status:not(:empty) {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.tool-status[data-state="loading"] {
+  border-color: var(--accent-contrast);
+  background: #EAF5FC;
+  color: #004E83;
+}
+
+.tool-status[data-state="success"] {
+  border-color: var(--success);
+  background: #ECFDF3;
+  color: #05603A;
+}
+
+.tool-status[data-state="warning"] {
+  border-color: var(--warning);
+  background: #FFFAEB;
+  color: #7A2E0E;
+}
+
+.tool-status[data-state="error"] {
+  border-color: var(--danger);
+  background: #FEF3F2;
+  color: #912018;
+}
+
 .tool-error {
   border: 1px solid #D92D20;
   background: #FEF3F2;

@@ -45,9 +45,19 @@
         </div>
 
         <label class="dropzone" id="dropzone" for="image-input">
-          <input class="visually-hidden" id="image-input" type="file" accept="image/*" multiple>
+          <input
+            class="visually-hidden"
+            id="image-input"
+            type="file"
+            accept="image/*"
+            multiple
+            aria-label="Choose image slices"
+            aria-describedby="image-constraints-hint image-format-hint processing-limit-hint"
+          >
           <span class="dropzone-title">Drop images here or choose files</span>
-          <span class="dropzone-detail">2–10 slices, clean abutting cuts, same height (horizontal) or same width (vertical)</span>
+          <span class="dropzone-detail" id="image-constraints-hint">2–10 slices, clean abutting cuts, same height (horizontal) or same width (vertical)</span>
+          <span class="dropzone-detail" id="image-format-hint">Use image formats supported by your browser (commonly JPEG, PNG, WebP, GIF, or BMP). Animated images use the decoded frame; corrupt or unsupported files are reported individually.</span>
+          <span class="dropzone-detail" id="processing-limit-hint">No resizing or overlap detection is performed.</span>
         </label>
         <div class="file-list-heading">
           <h3>Selected files</h3>

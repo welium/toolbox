@@ -86,6 +86,12 @@ function setError(message) {
   elements.runError.hidden = !message;
 }
 
+function setStatus(message, state = "neutral") {
+  elements.status.textContent = message;
+  if (message) elements.status.dataset.state = state;
+  else delete elements.status.dataset.state;
+}
+
 function updateControls() {
   const available = validFiles().length;
   const invalid = files.filter((record) => record.state === "error").length;
@@ -104,6 +110,7 @@ function updateControls() {
   if (busy) hint = "Stitching is in progress. Please wait.";
   else if (pendingDecodes > 0) hint = "Waiting for image decoding to finish…";
   else if (available >= 2) hint = `${available} valid image${available === 1 ? "" : "s"} ready. The optimizer chooses their final order.`;
+  else if (files.length > 0 && invalid === files.length) hint = "No usable images: every selected file failed decoding or has an unsupported format. Choose browser-supported image files and try again.";
   else if (invalid > 0) hint = "At least two valid images are required; remove or replace files with errors.";
   else if (files.length === 1) hint = "Add at least one more valid image to enable stitching.";
   else if (files.length > 1) hint = "At least two valid images are required; check the file errors below.";
@@ -304,7 +311,7 @@ async function readRecord(record) {
 }
 
 function addFiles(fileCollection) {
-  if (busy || downloading) return;
+  if (busy || downloading || !fileCollection) return;
   const selected = Array.from(fileCollection);
   if (selected.length === 0) return;
   clearResult();
@@ -323,16 +330,22 @@ function addFiles(fileCollection) {
   pendingDecodes += newRecords.length;
   renderFiles();
   updateControls();
-  elements.status.textContent = `Reading ${newRecords.length} image${newRecords.length === 1 ? "" : "s"}…`;
+  setStatus(`Reading ${newRecords.length} image${newRecords.length === 1 ? "" : "s"}…`, "loading");
 
   // Decode one file at a time to avoid retaining several full-size decoder
   // surfaces concurrently on memory-constrained devices.
   void (async () => {
     for (const record of newRecords) await readRecord(record);
     if (newRecords.some((record) => record.usedFallback)) {
-      elements.status.textContent = "An image used the fallback decoder; EXIF rotation may not be applied.";
+      setStatus("An image used the fallback decoder; EXIF rotation may not be applied.", "warning");
     } else if (pendingDecodes === 0) {
-      elements.status.textContent = "Image intake complete. Files stay in this browser.";
+      const failed = files.some((record) => record.state === "error");
+      setStatus(
+        failed
+          ? "Image intake complete. Check file errors below; successfully decoded files remain selected."
+          : "Image intake complete. Files stay in this browser.",
+        failed ? "warning" : "success",
+      );
     }
   })();
 }
@@ -372,7 +385,7 @@ async function solveAxisAsync(features, records, axis, k) {
   ));
 
   for (let row = 0; row < features.length; row += 1) {
-    elements.status.textContent = `Comparing ${axis} seams (${row + 1} of ${features.length})…`;
+    setStatus(`Comparing ${axis} seams (${row + 1} of ${features.length})…`, "loading");
     for (let column = 0; column < features.length; column += 1) {
       if (row !== column) matrix[row][column] = seamCost(features[row], features[column], clampedK, axis);
     }
@@ -630,11 +643,11 @@ async function runStitch() {
   busy = true;
   renderFiles();
   updateControls();
-  elements.status.textContent = "Preparing image features…";
+  setStatus("Preparing image features…", "loading");
   try {
     const features = [];
     for (let index = 0; index < records.length; index += 1) {
-      elements.status.textContent = `Preparing image features (${index + 1} of ${records.length})…`;
+      setStatus(`Preparing image features (${index + 1} of ${records.length})…`, "loading");
       await yieldToBrowser();
       const context = records[index].canvas.getContext("2d", { willReadFrequently: true });
       const imageData = context.getImageData(0, 0, records[index].width, records[index].height);
@@ -652,25 +665,25 @@ async function runStitch() {
     const previewOnly = elements.previewOnly.checked;
     if (previewOnly) {
       drawPreview(ordered, solution.selected.axis, dimensions, true);
-      elements.status.textContent = "Preview only — no file generated.";
+      setStatus("Preview only — no file generated.", "success");
     } else {
       try {
         resultCanvas = composeResult(ordered, solution.selected.axis, dimensions);
         drawPreview(ordered, solution.selected.axis, dimensions, false);
-        elements.status.textContent = `Stitch ready: ${dimensions.width}x${dimensions.height} pixels. Choose JPEG or PNG to download.`;
+        setStatus(`Stitch ready: ${dimensions.width}x${dimensions.height} pixels. Choose JPEG or PNG to download.`, "success");
       } catch (error) {
         if (resultCanvas) {
           resultCanvas.width = 0;
           resultCanvas.height = 0;
           resultCanvas = null;
         }
-        elements.status.textContent = "The order and costs are ready, but a full-resolution preview could not be created.";
+        setStatus("The order and costs are ready, but a full-resolution preview could not be created.", "warning");
         setError(`Could not create the full-resolution stitched image: ${error.message} Try Preview only or use fewer/smaller images.`);
       }
     }
   } catch (error) {
     setError(error instanceof Error ? error.message : String(error));
-    elements.status.textContent = "Stitching could not be completed. Your files and options are still selected.";
+    setStatus("Stitching could not be completed. Your files and options are still selected.", "error");
   } finally {
     busy = false;
     renderFiles();
@@ -685,7 +698,7 @@ function downloadBlob(mimeType, extension, quality) {
   elements.downloadPng.disabled = true;
   renderFiles();
   updateControls();
-  elements.status.textContent = `Preparing ${extension.toUpperCase()} download…`;
+  setStatus(`Preparing ${extension.toUpperCase()} download…`, "loading");
   try {
     resultCanvas.toBlob((blob) => {
       downloading = false;
@@ -695,7 +708,7 @@ function downloadBlob(mimeType, extension, quality) {
       updateControls();
       if (!blob) {
         setError(`The browser could not encode this image as ${extension.toUpperCase()}.`);
-        elements.status.textContent = "Download failed; try the other image format.";
+        setStatus("Download failed; try the other image format.", "error");
         return;
       }
       let url;
@@ -715,7 +728,7 @@ function downloadBlob(mimeType, extension, quality) {
           downloadUrls.delete(url);
         }, 60_000);
         setError("");
-        elements.status.textContent = `${extension.toUpperCase()} download started.`;
+        setStatus(`${extension.toUpperCase()} download started.`, "success");
       } catch (error) {
         anchor?.remove();
         if (url) {
@@ -723,7 +736,7 @@ function downloadBlob(mimeType, extension, quality) {
           downloadUrls.delete(url);
         }
         setError(`Could not start the ${extension.toUpperCase()} download: ${error.message}`);
-        elements.status.textContent = "Download failed.";
+        setStatus("Download failed.", "error");
       }
     }, mimeType, quality);
   } catch (error) {
@@ -731,7 +744,7 @@ function downloadBlob(mimeType, extension, quality) {
     renderFiles();
     updateControls();
     setError(`Could not encode the ${extension.toUpperCase()} download: ${error.message}`);
-    elements.status.textContent = "Download failed.";
+    setStatus("Download failed.", "error");
   }
 }
 
@@ -753,7 +766,7 @@ for (const eventName of ["dragleave", "drop"]) {
     elements.dropzone.classList.remove("dropzone--active");
   });
 }
-elements.dropzone.addEventListener("drop", (event) => addFiles(event.dataTransfer.files));
+elements.dropzone.addEventListener("drop", (event) => addFiles(event.dataTransfer?.files));
 
 elements.runButton.addEventListener("click", runStitch);
 elements.stripWidth.addEventListener("input", () => {
