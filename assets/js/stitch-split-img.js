@@ -336,7 +336,9 @@ function addFiles(fileCollection) {
   // surfaces concurrently on memory-constrained devices.
   void (async () => {
     for (const record of newRecords) await readRecord(record);
-    if (newRecords.some((record) => record.usedFallback)) {
+    if (!newRecords.some((record) => files.includes(record))) {
+      setStatus("");
+    } else if (newRecords.some((record) => record.usedFallback)) {
       setStatus("An image used the fallback decoder; EXIF rotation may not be applied.", "warning");
     } else if (pendingDecodes === 0) {
       const failed = files.some((record) => record.state === "error");
