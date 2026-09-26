@@ -339,6 +339,10 @@ function addFiles(fileCollection) {
   void (async () => {
     for (const record of newRecords) await readRecord(record);
     if (batchSequence !== intakeSequence) return;
+    while (pendingDecodes > 0) {
+      await yieldToBrowser();
+      if (batchSequence !== intakeSequence) return;
+    }
     if (!newRecords.some((record) => files.includes(record))) {
       setStatus("");
     } else if (newRecords.some((record) => record.usedFallback)) {
