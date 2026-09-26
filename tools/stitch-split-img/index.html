@@ -8,21 +8,125 @@
     <link rel="stylesheet" href="../../assets/css/tokens.css">
     <link rel="stylesheet" href="../../assets/css/base.css">
     <link rel="stylesheet" href="../../assets/css/components.css">
+    <script type="module" src="../../assets/js/stitch-split-img.js"></script>
   </head>
   <body>
     <header class="site-header">
-      <span class="site-name">Toolbox</span>
+      <a class="site-name" href="../../">Toolbox</a>
       <nav class="site-nav" aria-label="Main navigation">
         <a class="home-link" href="../../">Home</a>
       </nav>
       <p class="header-note">Files stay in your browser</p>
     </header>
 
-    <main class="page-content">
-      <h1>Stitch Split Img</h1>
-      <section class="stub-state" aria-labelledby="stub-heading">
-        <h2 id="stub-heading">Under construction</h2>
-        <p>This tool is not available yet. No files are being processed on this page.</p>
+    <main class="page-content tool-page">
+      <div class="tool-toolbar">
+        <div class="tool-heading">
+          <a class="back-link" href="../../">← Back to tools</a>
+          <h1>Stitch Split Img</h1>
+          <p>Order abutting image slices, join them, and save the result.</p>
+        </div>
+        <div class="run-action">
+          <button class="pill-link pill-link--primary stitch-button" id="stitch-button" type="button" disabled>
+            Stitch images
+          </button>
+          <p class="run-explanation" id="file-count-hint" role="status" aria-live="polite">At least two valid images are required.</p>
+        </div>
+      </div>
+
+      <div class="tool-status" id="tool-status" role="status" aria-live="polite"></div>
+      <div class="tool-error" id="run-error" role="alert" hidden></div>
+      <div class="tool-warning" id="large-job-warning" role="status" hidden></div>
+
+      <section class="tool-section intake-section" aria-labelledby="intake-heading">
+        <div class="section-heading">
+          <h2 id="intake-heading">1. Add image slices</h2>
+          <p>Images are processed locally and are never uploaded.</p>
+        </div>
+
+        <label class="dropzone" id="dropzone" for="image-input">
+          <input class="visually-hidden" id="image-input" type="file" accept="image/*" multiple>
+          <span class="dropzone-title">Drop images here or choose files</span>
+          <span class="dropzone-detail">2–10 slices, clean abutting cuts, same height (horizontal) or same width (vertical)</span>
+        </label>
+        <div class="file-list-heading">
+          <h3>Selected files</h3>
+          <p>Optimizer chooses final order.</p>
+        </div>
+        <ul class="file-list" id="file-list" aria-label="Selected image files">
+          <li class="file-list-empty" id="empty-files">No images selected.</li>
+        </ul>
+      </section>
+
+      <section class="tool-section options-section" aria-labelledby="options-heading">
+        <div class="section-heading">
+          <h2 id="options-heading">2. Stitch options</h2>
+          <p>Choose a direction and how much of each edge to compare.</p>
+        </div>
+
+        <div class="options-grid">
+          <fieldset class="axis-control">
+            <legend>Axis</legend>
+            <div class="segmented-control">
+              <label><input type="radio" name="axis" value="horizontal" checked><span>Horizontal</span></label>
+              <label><input type="radio" name="axis" value="vertical"><span>Vertical</span></label>
+              <label><input type="radio" name="axis" value="auto"><span>Auto</span></label>
+            </div>
+          </fieldset>
+
+          <div class="field-control">
+            <label for="strip-width">Strip width K</label>
+            <input id="strip-width" name="strip-width" type="number" min="1" step="1" value="3" inputmode="numeric" aria-describedby="strip-width-hint strip-width-error">
+            <span class="field-hint" id="strip-width-hint">Default: 3 pixels.</span>
+            <span class="field-error" id="strip-width-error" hidden></span>
+          </div>
+
+          <div class="checkbox-controls">
+            <label class="checkbox-control"><input id="verbose-matrix" type="checkbox"><span>Show verbose cost matrix</span></label>
+            <label class="checkbox-control"><input id="preview-only" type="checkbox"><span>Preview only — no file generated</span></label>
+          </div>
+        </div>
+      </section>
+
+      <p class="exif-note">Images are decoded with EXIF orientation when the browser supports it. If its image decoder is unavailable, the fallback may not apply EXIF rotation.</p>
+
+      <section class="tool-section report-section" id="report-section" aria-labelledby="report-heading" hidden>
+        <div class="section-heading">
+          <h2 id="report-heading">3. Stitch report</h2>
+          <p id="report-axis"></p>
+        </div>
+        <div id="report-notes" class="report-notes"></div>
+        <div class="report-grid">
+          <div>
+            <h3>Recommended order</h3>
+            <ol class="ordered-files" id="ordered-files"></ol>
+            <dl class="cost-summary" id="cost-summary"></dl>
+            <h3>Seam costs</h3>
+            <ul class="seam-costs" id="seam-costs"></ul>
+          </div>
+          <section class="matrix-section" id="matrix-section" aria-labelledby="matrix-heading" hidden>
+            <h3 id="matrix-heading">Directed cost matrix</h3>
+            <div class="matrix-scroll" id="matrix-scroll" tabindex="0" aria-label="Scrollable directed seam cost matrix">
+              <table class="cost-matrix" id="cost-matrix"></table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="tool-section preview-section" id="preview-section" aria-labelledby="preview-heading" hidden>
+        <div class="section-heading">
+          <h2 id="preview-heading">4. Preview</h2>
+          <p id="preview-dimensions"></p>
+        </div>
+        <p id="preview-only-note" class="tool-warning" hidden>Preview only — no file generated.</p>
+        <div class="preview-frame">
+          <canvas id="result-preview" aria-label="Stitched image preview" aria-describedby="preview-description"></canvas>
+        </div>
+        <p class="field-hint" id="preview-description"></p>
+        <div class="download-actions" id="download-actions" hidden>
+          <button class="pill-link pill-link--primary" id="download-jpeg" type="button">Download JPEG</button>
+          <button class="pill-link pill-link--secondary" id="download-png" type="button">Download PNG</button>
+        </div>
       </section>
     </main>
 
