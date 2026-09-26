@@ -7,27 +7,40 @@
     <title>Toolbox</title>
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/components.css">
   </head>
   <body>
     <header class="site-header">
-      <a class="site-name" href="./">Toolbox</a>
+      <span class="site-name">Toolbox</span>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="home-link" href="./" aria-current="page">Home</a>
+      </nav>
+      <p class="header-note">Files stay in your browser</p>
     </header>
 
     <main class="page-content">
-      <h1>Toolbox</h1>
-      <p>A collection of small, useful tools.</p>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">A stateless collection of browser tools</p>
+        <h1 id="page-title">Useful tools. Nothing to install.</h1>
+        <p class="hero-purpose">Small, focused tools that run entirely in your browser.</p>
+        <a class="pill-link pill-link--primary" href="tools/stitch-split-img/">Open Stitch Split Img</a>
+      </section>
 
-      <section aria-labelledby="tools-heading">
-        <h2 id="tools-heading">Tools</h2>
-        <p>
-          <a href="tools/stitch-split-img/">Stitch Split Img</a>
-          <span class="status-note"> — coming soon</span>
-        </p>
+      <section class="registry-section" aria-labelledby="tools-heading">
+        <div class="section-heading">
+          <h2 id="tools-heading">Tools</h2>
+          <p>Pick a tool for the task at hand.</p>
+        </div>
+        <ul class="tool-grid" id="tool-list" aria-labelledby="tools-heading"></ul>
+        <noscript>
+          <p class="script-note">Turn on JavaScript to view the tool directory.</p>
+        </noscript>
       </section>
     </main>
 
     <footer class="site-footer">
-      <p>Files stay in your browser. Nothing is stored.</p>
+      <p>Private by design: files stay in your browser and nothing is stored.</p>
     </footer>
+    <script type="module" src="assets/js/tool-registry.js"></script>
   </body>
 </html>
