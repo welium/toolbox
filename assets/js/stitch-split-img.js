@@ -40,6 +40,7 @@ const elements = {
 const files = [];
 const downloadUrls = new Set();
 let pendingDecodes = 0;
+let intakeSequence = 0;
 let busy = false;
 let downloading = false;
 let resultCanvas = null;
@@ -314,6 +315,7 @@ function addFiles(fileCollection) {
   if (busy || downloading || !fileCollection) return;
   const selected = Array.from(fileCollection);
   if (selected.length === 0) return;
+  const batchSequence = ++intakeSequence;
   clearResult();
   setError("");
   const newRecords = selected.map((file) => ({
@@ -336,6 +338,7 @@ function addFiles(fileCollection) {
   // surfaces concurrently on memory-constrained devices.
   void (async () => {
     for (const record of newRecords) await readRecord(record);
+    if (batchSequence !== intakeSequence) return;
     if (!newRecords.some((record) => files.includes(record))) {
       setStatus("");
     } else if (newRecords.some((record) => record.usedFallback)) {
