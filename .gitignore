@@ -9,3 +9,6 @@ Thumbs.db
 *.swp
 *.swo
 *.bak
+
+# Generated deployment assets
+dist/

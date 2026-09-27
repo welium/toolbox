@@ -12,6 +12,27 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000/>. Stop the server with `Ctrl+C`. Any static file server can be used; the site does not need a build step.
 
+## Deploy to Cloudflare Workers
+
+Cloudflare Workers serves this site as static assets; there is no Worker script or server-side image processing. The `dist/` directory is generated for deployment and contains only the public site files, not repository documentation or configuration.
+
+To deploy manually, install Node.js, sign in to your Cloudflare account, then run from the repository root:
+
+```sh
+sh scripts/prepare-assets.sh
+npx wrangler@latest login
+npx wrangler@latest deploy
+```
+
+The site will be available at the `*.workers.dev` URL printed by Wrangler. If `toolbox` is already used as a Worker name in your account, change `name` in `wrangler.jsonc` before deploying. After subsequent site changes, rerun the preparation script before deploying; do not commit `dist/`.
+
+For automatic deployments from GitHub, push the repository to GitHub, then in Cloudflare **Workers & Pages** connect that repository using **Workers Builds**. Select your production branch and the repository root, and configure:
+
+- **Build command:** `sh scripts/prepare-assets.sh`
+- **Deploy command:** `npx wrangler@latest deploy`
+
+The Cloudflare Git integration handles deployment authentication; no Cloudflare API token needs to be committed. Once deployed, check `/`, `/tools/stitch-split-img/`, and that styles, scripts, and image downloads work. Missing paths should return 404 rather than the home page.
+
 ## Stitch Split Img
 
 Open **Stitch Split Img**, then choose or drop at least two image slices. The tool decodes images and computes their order in the browser. **Files never leave your browser**; source images and intermediate canvases remain in memory for the current page session and are not saved.
