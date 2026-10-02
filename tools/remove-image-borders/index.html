@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFFFFF">
+    <title>Remove Image Borders — Toolbox</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <script type="module" src="../../assets/js/remove-image-borders.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../../">Toolbox</a>
+      <nav class="site-nav" aria-label="Main navigation"><a class="home-link" href="../../">Home</a></nav>
+      <p class="header-note">Files stay in your browser</p>
+    </header>
+    <main class="page-content tool-page">
+      <div class="tool-toolbar"><div class="tool-heading">
+        <a class="back-link" href="../../">← Back to tools</a>
+        <h1>Remove Image Borders</h1>
+        <p>Automatically find the border color and trim it away. No resizing.</p>
+      </div></div>
+      <noscript><p class="tool-warning">Turn on JavaScript to use this tool.</p></noscript>
+      <div class="tool-status" id="tool-status" role="status" aria-live="polite"></div>
+      <div class="tool-error" id="tool-error" role="alert" hidden></div>
+      <section class="tool-section" aria-labelledby="intake-heading">
+        <div class="section-heading"><h2 id="intake-heading">1. Add an image</h2><p>No uploads. No storage.</p></div>
+        <label class="dropzone" id="dropzone" for="image-input">
+          <input class="visually-hidden" id="image-input" type="file" accept="image/*" aria-describedby="image-hint">
+          <span class="dropzone-title">Drop an image here or choose a file</span>
+          <span class="dropzone-detail" id="image-hint">One browser-supported image at a time. Animated images use a single decoded frame.</span>
+        </label>
+        <p class="field-hint" id="file-details">No image selected.</p>
+      </section>
+      <form id="border-form" hidden>
+        <section class="tool-section" aria-labelledby="options-heading">
+          <div class="section-heading"><h2 id="options-heading">2. Border removal options</h2><p>Detects black, white, other solid colors, and transparency.</p></div>
+          <div class="compact-grid">
+            <div class="field-control"><label for="border-tolerance">Color tolerance</label><input id="border-tolerance" type="number" min="0" max="64" step="1" value="16" required aria-describedby="tolerance-hint"><span class="field-hint" id="tolerance-hint">0 = exact match. Default 16 allows slight noise; raise up to 64 for uneven or compressed borders.</span></div>
+            <div class="field-control"><label for="output-format">Save format</label><select id="output-format"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div>
+            <div class="field-control"><label for="quality">Quality (%)</label><input id="quality" type="number" min="1" max="100" step="1" value="92" disabled required aria-describedby="quality-hint"><span class="field-hint" id="quality-hint">JPEG and WebP only. JPEG fills transparency with white.</span></div>
+          </div>
+          <p class="field-hint">Review the result before downloading: matching content at an image's edge cannot always be distinguished from a border. Higher tolerance can remove more content. Need a precise crop? Use <a href="../image-resizer-converter/">Image Resizer &amp; Converter</a>.</p>
+          <p class="field-hint">Up to 16,384 pixels per side and 32 million pixels total. Large images still need substantial memory.</p>
+          <div class="download-actions"><button class="pill-link pill-link--primary" id="remove-borders" type="submit">Detect &amp; remove borders</button></div>
+        </section>
+      </form>
+      <div class="report-grid">
+        <section class="tool-section" id="source-section" aria-labelledby="source-heading" hidden>
+          <div class="section-heading"><h2 id="source-heading">Original image</h2><p id="source-dimensions"></p></div>
+          <div class="preview-frame"><canvas id="source-preview" role="img" aria-label="Original image; the outlined region is kept after detection" aria-describedby="source-description"></canvas></div>
+          <p class="field-hint" id="source-description">After detection, the outline shows the retained region.</p>
+        </section>
+        <section class="tool-section" id="result-section" aria-labelledby="result-heading" hidden>
+          <div class="section-heading"><h2 id="result-heading">Trimmed image</h2><p id="result-dimensions"></p></div>
+          <p class="field-hint" id="border-report"></p>
+          <div class="preview-frame"><img id="result-preview" alt="Image with its solid-color border removed"></div>
+          <p class="field-hint" id="result-details"></p>
+          <div class="download-actions"><a class="pill-link pill-link--primary" id="download-image">Download trimmed image</a></div>
+        </section>
+      </div>
+    </main>
+    <footer class="site-footer"><p>Private by design: files stay in your browser and nothing is stored.</p></footer>
+  </body>
+</html>

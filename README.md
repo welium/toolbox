@@ -67,6 +67,16 @@ Set output dimensions; **Keep aspect ratio** links width and height to the crop'
 
 Processing uses `createImageBitmap` with EXIF orientation and Canvas 2D; a recent evergreen browser is required. Animated inputs use a single decoded frame. Output is limited to 16,384 pixels per side and 32 million pixels total to bound canvas allocation; browser/device limits may be lower. Large source images still require substantial decoding memory. Unsupported inputs, canvas/encoding failures, and unsupported output formats are reported. Re-encoding does not preserve source EXIF or other metadata and is not a lossless round-trip guarantee.
 
+## Remove Image Borders
+
+Open the standalone **Remove Image Borders** tool, select or drop one browser-supported image, then click **Detect & remove borders**. It automatically recognizes black, white, other solid colors, or transparent margins. The original preview outlines the retained area; the trimmed preview reports the inferred border color, removed pixels on each side, and output dimensions. Download as PNG (default), JPEG, or WebP without resizing. JPEG fills transparency with white; JPEG/WebP quality defaults to 92%. Re-encoding does not preserve source metadata.
+
+**Color tolerance** is 0–64 (default 16): zero requires exact matching, while higher values accept mild color variation such as compression noise. Inspect the result before downloading. Content that matches the border at an edge is inherently indistinguishable from a margin and can be cropped; lower tolerance or use **Image Resizer & Converter** for manual cropping when necessary.
+
+Detection estimates the median color of each outer edge, verifies every pixel on that edge against the tolerance, and requires identified solid edges to agree before treating that color as a border. It scans all pixels to find the bounding rectangle of content that differs from that color, preserving even isolated contrasting pixels. Borders may be asymmetric, on opposite sides only (letterboxing/pillarboxing), or on a single side. Conflicting solid edge colors, entirely uniform images, or images without removable borders are reported without producing a trimmed file. This is not object/background removal; patterned, gradient, or multi-color frames are outside its scope.
+
+RGBA comparisons use premultiplied colors so fully transparent margins do not depend on hidden RGB. Pixel reads are limited to roughly 4 MiB strips, with timer yields between strips for cancellation. The full decoded image and analysis canvas still require memory; detection is limited to 16,384 pixels per side and 32 million pixels total, with potentially lower browser/device limits. The analysis canvas is released before allocating output. New images or option changes invalidate pending work and old downloads. All processing stays in-browser, with no uploads or persistence. Recent Canvas 2D/`createImageBitmap` support is required; EXIF orientation is applied and animated images use one decoded frame.
+
 ## File Hash Calculator
 
 Open **File Hash Calculator**, select or drop one file of any type, and click **Calculate SHA-256**. Empty files are supported. Copy the lowercase hexadecimal checksum or paste an expected checksum to compare. Comparison ignores hexadecimal case and surrounding whitespace; the expected value must otherwise be exactly 64 hexadecimal characters. A matching checksum verifies content against the expected hash, not file safety or source authenticity.
@@ -95,13 +105,16 @@ A slot fits only when every minute of the entire meeting is inside all participa
 
 ## Tests
 
-Timezone logic tests use only Node.js:
+Image-border and timezone logic tests use only Node.js:
 
 ```sh
 node --test scripts/test-timezone-planner.mjs
+node --test scripts/test-image-borders.mjs
 ```
 
 They cover seasonal/DST offsets, different DST transition dates, repeated/skipped hours, fractional-hour offsets, local-day rollover, full-duration availability, and input validation.
+
+Border tests cover black/white/custom colors, asymmetric/single-sided margins, letterboxing/pillarboxing, noise tolerance, transparency, uniform/conflicting/no-border images, isolated content pixels, low-contrast content, and cancellation.
 
 ### Browser smoke tests
 
@@ -111,10 +124,11 @@ With the site served at `http://127.0.0.1:8000` and Playwright CLI available, ru
 playwright-cli open http://127.0.0.1:8000/
 playwright-cli run-code --filename=scripts/test-file-tools.js
 playwright-cli run-code --filename=scripts/test-interactive-tools.js
+playwright-cli run-code --filename=scripts/test-remove-image-borders.js
 playwright-cli close
 ```
 
-The file-tool tests cover crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The interactive-tool tests cover weighted selections, simulation outcomes and cancellation, planner controls and meeting summaries, and mobile layouts. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
+The file-tool tests cover crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The interactive-tool tests cover weighted selections, simulation outcomes and cancellation, planner controls and meeting summaries, and mobile layouts. The border-tool tests cover detection, trimmed pixels and downloads, formats, no-border cases, option invalidation, stale results, failures, and mobile overflow. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
 
 ## Project conventions
 

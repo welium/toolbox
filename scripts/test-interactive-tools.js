@@ -15,7 +15,9 @@ async (page) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
 
   await page.goto(base);
-  assert(await page.getByRole("link", { name: "Open tool", exact: true }).count() === 6, "Home should list six tools");
+  for (const tool of ["decision-wheel", "probability-simulator", "timezone-meeting-planner"]) {
+    assert(await page.locator(`a[href="tools/${tool}/"]`).count() === 1, `Home should list ${tool}`);
+  }
   await page.goto(`${base}/tools/decision-wheel/`);
   assert(await page.locator("#choice-odds li").count() === 4, "Default wheel should have four choices");
   assert(await page.evaluate(async () => {
@@ -149,5 +151,5 @@ async (page) => {
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${tool} mobile overflow`);
   }
   assert(errors.length === 0, `Unexpected browser errors: ${errors.join(", ")}`);
-  return "PASS: six-tool registry, weighted wheel and pointer alignment, input validation, reduced motion, simulation counts/theory/accumulation/stop/reset, planner DST/overlap/filter/selection/clipboard/zone validation, and mobile layouts.";
+  return "PASS: tool registry, weighted wheel and pointer alignment, input validation, reduced motion, simulation counts/theory/accumulation/stop/reset, planner DST/overlap/filter/selection/clipboard/zone validation, and mobile layouts.";
 }

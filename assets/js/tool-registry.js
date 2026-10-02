@@ -41,6 +41,13 @@ export const toolRegistry = [
     description: "Compare local times and find shared working hours across timezones.",
     status: "enabled",
   },
+  {
+    id: "remove-image-borders",
+    title: "Remove Image Borders",
+    href: "tools/remove-image-borders/",
+    description: "Detect and trim black, white, or other solid-color image borders automatically.",
+    status: "enabled",
+  },
 ];
 
 const toolList = document.querySelector("#tool-list");
