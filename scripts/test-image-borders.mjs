@@ -55,6 +55,19 @@ test("noise tolerance and strict matching", async () => {
   assert.deepEqual((await detect(image, 16)).crop, { x: 2, y: 3, w: 7, h: 5 });
 });
 
+test("higher tolerance removes near-matching inner border pixels without a leftover rim", async () => {
+  for (const base of [0, 255]) {
+    const image = fixture(14, 12, (x, y) => {
+      if (x >= 3 && x < 11 && y >= 3 && y < 9) return [180, 70, 130, 255];
+      const innerBorder = x >= 2 && x < 12 && y >= 2 && y < 10;
+      const gray = innerBorder ? (base === 0 ? 25 : 230) : base;
+      return [gray, gray, gray, 255];
+    });
+    assert.deepEqual((await detect(image, 16)).crop, { x: 2, y: 2, w: 10, h: 8 });
+    assert.deepEqual((await detect(image, 32)).crop, { x: 3, y: 3, w: 8, h: 6 });
+  }
+});
+
 test("transparent and partially transparent borders", async () => {
   const transparent = fixture(8, 8, (x, y) => x >= 2 && x < 6 && y >= 2 && y < 6 ? [0, 0, 0, 255] : [x * 20, y * 20, 240, 0]);
   const result = await detect(transparent, 0);

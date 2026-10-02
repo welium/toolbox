@@ -26,11 +26,11 @@
       <div class="tool-status" id="tool-status" role="status" aria-live="polite"></div>
       <div class="tool-error" id="tool-error" role="alert" hidden></div>
       <section class="tool-section" aria-labelledby="intake-heading">
-        <div class="section-heading"><h2 id="intake-heading">1. Add an image</h2><p>No uploads. No storage.</p></div>
+        <div class="section-heading"><h2 id="intake-heading">1. Add images</h2><p>No uploads. No storage.</p></div>
         <label class="dropzone" id="dropzone" for="image-input">
-          <input class="visually-hidden" id="image-input" type="file" accept="image/*" aria-describedby="image-hint">
-          <span class="dropzone-title">Drop an image here or choose a file</span>
-          <span class="dropzone-detail" id="image-hint">One browser-supported image at a time. Animated images use a single decoded frame.</span>
+          <input class="visually-hidden" id="image-input" type="file" accept="image/*" multiple aria-describedby="image-hint">
+          <span class="dropzone-title">Drop images here or choose files</span>
+          <span class="dropzone-detail" id="image-hint">Choose one image or multiple images for a batch. Animated images use a single decoded frame.</span>
         </label>
         <p class="field-hint" id="file-details">No image selected.</p>
       </section>
@@ -38,9 +38,9 @@
         <section class="tool-section" aria-labelledby="options-heading">
           <div class="section-heading"><h2 id="options-heading">2. Border removal options</h2><p>Detects black, white, other solid colors, and transparency.</p></div>
           <div class="compact-grid">
-            <div class="field-control"><label for="border-tolerance">Color tolerance</label><input id="border-tolerance" type="number" min="0" max="64" step="1" value="16" required aria-describedby="tolerance-hint"><span class="field-hint" id="tolerance-hint">0 = exact match. Default 16 allows slight noise; raise up to 64 for uneven or compressed borders.</span></div>
-            <div class="field-control"><label for="output-format">Save format</label><select id="output-format"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div>
-            <div class="field-control"><label for="quality">Quality (%)</label><input id="quality" type="number" min="1" max="100" step="1" value="92" disabled required aria-describedby="quality-hint"><span class="field-hint" id="quality-hint">JPEG and WebP only. JPEG fills transparency with white.</span></div>
+            <div class="field-control"><label for="border-tolerance">Color tolerance</label><input id="border-tolerance" type="number" min="0" max="64" step="1" value="32" required aria-describedby="tolerance-hint"><span class="field-hint" id="tolerance-hint">0 = exact match. Default 32 removes near-matching pixels, including compression noise; raise up to 64 if a thin border remains.</span></div>
+            <div class="field-control"><label for="output-format">Save format</label><select id="output-format"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div>
+            <div class="field-control"><label for="quality">Quality (%)</label><input id="quality" type="number" min="1" max="100" step="1" value="100" required aria-describedby="quality-hint"><span class="field-hint" id="quality-hint">JPEG and WebP only. JPEG fills transparency with white.</span></div>
           </div>
           <p class="field-hint">Review the result before downloading: matching content at an image's edge cannot always be distinguished from a border. Higher tolerance can remove more content. Need a precise crop? Use <a href="../image-resizer-converter/">Image Resizer &amp; Converter</a>.</p>
           <p class="field-hint">Up to 16,384 pixels per side and 32 million pixels total. Large images still need substantial memory.</p>
@@ -61,6 +61,12 @@
           <div class="download-actions"><a class="pill-link pill-link--primary" id="download-image">Download trimmed image</a></div>
         </section>
       </div>
+      <section class="tool-section" id="batch-section" aria-labelledby="batch-heading" hidden>
+        <div class="section-heading"><h2 id="batch-heading">Batch results</h2><p>Images are processed one at a time using the same options.</p></div>
+        <div class="download-actions"><button class="pill-link pill-link--primary" id="download-batch" type="button" disabled>Download all trimmed images (ZIP)</button></div>
+        <p class="field-hint">Only successfully trimmed images are included. Review each preview before downloading. Images without a removable border are skipped.</p>
+        <div class="report-grid" id="batch-results"></div>
+      </section>
     </main>
     <footer class="site-footer"><p>Private by design: files stay in your browser and nothing is stored.</p></footer>
   </body>

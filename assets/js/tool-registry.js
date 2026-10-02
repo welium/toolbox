@@ -45,7 +45,7 @@ export const toolRegistry = [
     id: "remove-image-borders",
     title: "Remove Image Borders",
     href: "tools/remove-image-borders/",
-    description: "Detect and trim black, white, or other solid-color image borders automatically.",
+    description: "Automatically trim solid-color image borders, one image or a batch at a time.",
     status: "enabled",
   },
 ];

@@ -69,9 +69,11 @@ Processing uses `createImageBitmap` with EXIF orientation and Canvas 2D; a recen
 
 ## Remove Image Borders
 
-Open the standalone **Remove Image Borders** tool, select or drop one browser-supported image, then click **Detect & remove borders**. It automatically recognizes black, white, other solid colors, or transparent margins. The original preview outlines the retained area; the trimmed preview reports the inferred border color, removed pixels on each side, and output dimensions. Download as PNG (default), JPEG, or WebP without resizing. JPEG fills transparency with white; JPEG/WebP quality defaults to 92%. Re-encoding does not preserve source metadata.
+Open the standalone **Remove Image Borders** tool, select or drop browser-supported images, then click **Detect & remove borders**. It automatically recognizes black, white, other solid colors, or transparent margins. For a single image, the original preview outlines the retained area; the trimmed preview reports the inferred border color, removed pixels on each side, and output dimensions. Download as JPG (default), PNG, or WebP without resizing. JPEG fills transparency with white; JPEG/WebP quality defaults to 100%. Re-encoding does not preserve source metadata; quality 100 is still lossy JPEG encoding.
 
-**Color tolerance** is 0–64 (default 16): zero requires exact matching, while higher values accept mild color variation such as compression noise. Inspect the result before downloading. Content that matches the border at an edge is inherently indistinguishable from a margin and can be cropped; lower tolerance or use **Image Resizer & Converter** for manual cropping when necessary.
+**Color tolerance** is 0–64 (default 32): zero requires exact matching, while higher values accept color variation such as compression noise and near-matching inner border pixels that would otherwise leave a thin rim. Raise it if a border remains. Inspect the result before downloading. Content that matches the border at an edge is inherently indistinguishable from a margin and can be cropped; lower tolerance or use **Image Resizer & Converter** for manual cropping when necessary.
+
+Selecting multiple images enables **batch processing** with shared tolerance, format, and quality options. Images are decoded, analyzed, and encoded sequentially; decoded bitmaps and canvases are released after each image to avoid retaining all full-size sources. Each file has its own report and successful trimmed preview/download. Images without a removable border are skipped, and a failed file does not stop the remaining batch. **Download all trimmed images (ZIP)** includes only successful outputs. Selection-index prefixes distinguish duplicate filenames. The dependency-free ZIP writer stores already-compressed image data without recompressing it and supports archives smaller than 4 GiB with up to 65,535 entries; individual downloads remain available if archive creation fails. Encoded results and ZIP data remain in memory until the selection/options change or the page closes.
 
 Detection estimates the median color of each outer edge, verifies every pixel on that edge against the tolerance, and requires identified solid edges to agree before treating that color as a border. It scans all pixels to find the bounding rectangle of content that differs from that color, preserving even isolated contrasting pixels. Borders may be asymmetric, on opposite sides only (letterboxing/pillarboxing), or on a single side. Conflicting solid edge colors, entirely uniform images, or images without removable borders are reported without producing a trimmed file. This is not object/background removal; patterned, gradient, or multi-color frames are outside its scope.
 
@@ -110,11 +112,12 @@ Image-border and timezone logic tests use only Node.js:
 ```sh
 node --test scripts/test-timezone-planner.mjs
 node --test scripts/test-image-borders.mjs
+node --test scripts/test-zip.mjs
 ```
 
 They cover seasonal/DST offsets, different DST transition dates, repeated/skipped hours, fractional-hour offsets, local-day rollover, full-duration availability, and input validation.
 
-Border tests cover black/white/custom colors, asymmetric/single-sided margins, letterboxing/pillarboxing, noise tolerance, transparency, uniform/conflicting/no-border images, isolated content pixels, low-contrast content, and cancellation.
+Border tests cover black/white/custom colors, asymmetric/single-sided margins, letterboxing/pillarboxing, noise tolerance and near-matching inner rims, transparency, uniform/conflicting/no-border images, isolated content pixels, low-contrast content, and cancellation. ZIP tests check file contents, UTF-8 names, CRCs, offsets, path sanitization, and size limits.
 
 ### Browser smoke tests
 
@@ -128,7 +131,7 @@ playwright-cli run-code --filename=scripts/test-remove-image-borders.js
 playwright-cli close
 ```
 
-The file-tool tests cover crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The interactive-tool tests cover weighted selections, simulation outcomes and cancellation, planner controls and meeting summaries, and mobile layouts. The border-tool tests cover detection, trimmed pixels and downloads, formats, no-border cases, option invalidation, stale results, failures, and mobile overflow. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
+The file-tool tests cover crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The interactive-tool tests cover weighted selections, simulation outcomes and cancellation, planner controls and meeting summaries, and mobile layouts. The border-tool tests cover JPG/quality-100 defaults, near-matching rims, detection, trimmed pixels and downloads, formats, no-border cases, option invalidation, stale results, failures, batch drops/previews/ZIP/duplicate names/partial failure/cancellation, and mobile overflow. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
 
 ## Project conventions
 
