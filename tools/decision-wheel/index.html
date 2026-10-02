@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFFFFF">
+    <title>Decision Wheel — Toolbox</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <script type="module" src="../../assets/js/decision-wheel.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../../">Toolbox</a>
+      <nav class="site-nav" aria-label="Main navigation"><a class="home-link" href="../../">Home</a></nav>
+      <p class="header-note">Everything stays in your browser</p>
+    </header>
+    <main class="page-content tool-page">
+      <div class="tool-toolbar"><div class="tool-heading">
+        <a class="back-link" href="../../">← Back to tools</a>
+        <h1>Decision Wheel</h1><p>Let a spin settle it. Give every choice equal odds, or add weights.</p>
+      </div></div>
+      <noscript><p class="tool-warning">Turn on JavaScript to use this tool.</p></noscript>
+      <div class="tool-error" id="tool-error" role="alert" hidden></div>
+      <div class="report-grid">
+        <section class="tool-section" aria-labelledby="choices-heading">
+          <div class="section-heading"><h2 id="choices-heading">Your choices</h2></div>
+          <div class="field-control">
+            <label for="choices">One choice per line</label>
+            <textarea id="choices" rows="8" maxlength="6000" aria-describedby="choices-hint" spellcheck="false">Pizza
+Sushi
+Tacos
+Pasta</textarea>
+            <span class="field-hint" id="choices-hint">2–50 choices. Optional weight: Pizza | 2. Weights are whole numbers from 1 to 1,000,000; weight 2 is twice as likely as weight 1. Blank lines are ignored.</span>
+          </div>
+          <div class="download-actions"><button class="pill-link pill-link--primary" id="spin-button" type="button">Spin the wheel</button></div>
+          <p class="field-hint">Choices are kept for this page session only. Each spin is independent.</p>
+          <ul class="choice-odds" id="choice-odds" aria-label="Choices and probabilities"></ul>
+        </section>
+        <section class="tool-section" aria-labelledby="wheel-heading">
+          <div class="section-heading"><h2 id="wheel-heading">Give it a spin</h2></div>
+          <div class="wheel-frame">
+            <span class="wheel-pointer" aria-hidden="true">▼</span>
+            <canvas id="wheel" width="600" height="600" role="img" aria-label="Weighted decision wheel. Choices and odds are listed alongside it."></canvas>
+          </div>
+          <p class="wheel-result" id="wheel-result" role="status" aria-live="polite">Ready when you are.</p>
+        </section>
+      </div>
+    </main>
+    <footer class="site-footer"><p>Private by design: nothing is uploaded or stored.</p></footer>
+  </body>
+</html>

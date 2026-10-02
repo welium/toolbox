@@ -32,7 +32,9 @@ async (page) => {
   });
 
   await page.goto(base);
-  assert(await page.getByRole("link", { name: "Open tool" }).count() === 3, "Home should register three tools");
+  for (const id of ["stitch-split-img", "image-resizer-converter", "file-hash-calculator"]) {
+    assert(await page.locator(`a[href="tools/${id}/"]`).count() >= 1, `Home should register ${id}`);
+  }
   await page.goto(`${base}/tools/image-resizer-converter/`);
   const fixture = await page.evaluate(() => {
     const canvas = document.createElement("canvas");

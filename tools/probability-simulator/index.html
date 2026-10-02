@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFFFFF">
+    <title>Probability Simulator — Toolbox</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <script type="module" src="../../assets/js/probability-simulator.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../../">Toolbox</a>
+      <nav class="site-nav" aria-label="Main navigation"><a class="home-link" href="../../">Home</a></nav>
+      <p class="header-note">Everything stays in your browser</p>
+    </header>
+    <main class="page-content tool-page">
+      <div class="tool-toolbar"><div class="tool-heading">
+        <a class="back-link" href="../../">← Back to tools</a>
+        <h1>Probability Simulator</h1><p>Watch random outcomes approach their theoretical odds.</p>
+      </div></div>
+      <noscript><p class="tool-warning">Turn on JavaScript to use this tool.</p></noscript>
+      <div class="tool-error" id="tool-error" role="alert" hidden></div>
+      <section class="tool-section" aria-labelledby="setup-heading">
+        <div class="section-heading"><h2 id="setup-heading">Choose an experiment</h2></div>
+        <form id="simulation-form">
+          <div class="compact-grid">
+            <div class="field-control"><label for="experiment">Experiment</label><select id="experiment"><option value="coin">Fair coin</option><option value="dice">Six-sided die</option><option value="monty">Monty Hall</option></select></div>
+            <div class="field-control"><label for="trials">Trials to add</label><input id="trials" type="number" min="1" max="1000000" step="1" value="10000" required aria-describedby="trials-hint"><span class="field-hint" id="trials-hint">1–1,000,000 per run; up to 10,000,000 total.</span></div>
+          </div>
+          <p class="field-hint" id="experiment-description"></p>
+          <div class="download-actions">
+            <button class="pill-link pill-link--primary" id="run-button" type="submit">Run simulation</button>
+            <button class="pill-link pill-link--secondary" id="stop-button" type="button" disabled>Stop</button>
+            <button class="pill-link pill-link--secondary" id="reset-button" type="button">Reset results</button>
+          </div>
+        </form>
+        <div class="tool-status" id="tool-status" role="status" aria-live="polite">Ready to simulate.</div>
+        <progress id="simulation-progress" max="1" value="0" aria-label="Simulation progress" hidden></progress>
+      </section>
+      <section class="tool-section" aria-labelledby="results-heading">
+        <div class="section-heading"><h2 id="results-heading">Results</h2><p id="total-trials">0 trials</p></div>
+        <div id="outcome-chart" class="outcome-chart" role="img" aria-label="Observed probabilities. Exact values are in the table below."></div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Simulation result table">
+          <table class="data-table"><caption>Observed frequencies compared with theoretical probabilities</caption><thead><tr><th scope="col">Outcome</th><th scope="col">Count</th><th scope="col">Observed</th><th scope="col">Theory</th><th scope="col">Difference</th></tr></thead><tbody id="results-body"></tbody></table>
+        </div>
+        <p class="field-hint">Differences are percentage points. Larger samples usually get closer to theory, but not on every run. This is an educational simulation, not a source of secure randomness.</p>
+      </section>
+    </main>
+    <footer class="site-footer"><p>Private by design: nothing is uploaded or stored.</p></footer>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFFFFF">
+    <title>Timezone Meeting Planner — Toolbox</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <script type="module" src="../../assets/js/timezone-meeting-planner.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../../">Toolbox</a>
+      <nav class="site-nav" aria-label="Main navigation"><a class="home-link" href="../../">Home</a></nav>
+      <p class="header-note">Everything stays in your browser</p>
+    </header>
+    <main class="page-content tool-page">
+      <div class="tool-toolbar"><div class="tool-heading">
+        <a class="back-link" href="../../">← Back to tools</a>
+        <h1>Timezone Meeting Planner</h1><p>Find a time that works across cities, with date-aware daylight-saving offsets.</p>
+      </div></div>
+      <noscript><p class="tool-warning">Turn on JavaScript to use this tool.</p></noscript>
+      <div class="tool-error" id="tool-error" role="alert" hidden></div>
+      <section class="tool-section" aria-labelledby="zones-heading">
+        <div class="section-heading"><h2 id="zones-heading">1. Timezones &amp; working hours</h2><p>Up to 6 timezones. Hours are local to each city.</p></div>
+        <form id="add-zone-form" class="inline-form">
+          <div class="field-control"><label for="zone-input">City / IANA timezone</label><input id="zone-input" type="text" list="zone-options" placeholder="Asia/Taipei" required maxlength="100" autocomplete="off" aria-describedby="zone-hint"><datalist id="zone-options"></datalist><span class="field-hint" id="zone-hint">Type a city in an IANA name, e.g. America/New_York, Europe/London, Asia/Kathmandu, or UTC.</span></div>
+          <button class="pill-link pill-link--secondary" id="add-zone" type="submit">Add timezone</button>
+        </form>
+        <div id="participants" class="participant-list"></div>
+        <p class="field-hint">Working hours must start and end on the same local day. Weekdays means Monday–Friday; holidays are not considered.</p>
+      </section>
+      <section class="tool-section" aria-labelledby="date-heading">
+        <div class="section-heading"><h2 id="date-heading">2. Pick a day &amp; duration</h2></div>
+        <div class="compact-grid">
+          <div class="field-control"><label for="meeting-date">Date (UTC reference day)</label><input id="meeting-date" type="date" min="2000-01-01" max="2100-12-31" required aria-describedby="date-hint"></div>
+          <div class="field-control"><label for="duration">Meeting duration</label><select id="duration"><option value="30">30 minutes</option><option value="60" selected>1 hour</option><option value="90">1½ hours</option><option value="120">2 hours</option></select></div>
+        </div>
+        <p class="field-hint" id="date-hint">Start times cover 00:00–23:30 UTC on this date, every 30 minutes. Local dates may be the previous or next day. A slot fits only if the entire meeting is within everyone's working hours.</p>
+        <label class="checkbox-control"><input id="only-overlap" type="checkbox"><span>Show only shared working-hour slots</span></label>
+      </section>
+      <section class="tool-section" aria-labelledby="slots-heading">
+        <div class="section-heading"><h2 id="slots-heading">3. Compare times</h2><p id="slot-summary" role="status" aria-live="polite"></p></div>
+        <p class="tool-warning" id="no-overlap" hidden>No shared working-hour slots on this UTC day. Try a different day, duration, or working hours.</p>
+        <div class="table-scroll planner-scroll" tabindex="0" role="region" aria-label="Timezone comparison table">
+          <table class="data-table planner-table"><caption id="table-caption">Meeting start times and full-duration availability</caption><thead id="slots-head"></thead><tbody id="slots-body"></tbody></table>
+        </div>
+      </section>
+      <section class="tool-section" id="selection-section" aria-labelledby="selection-heading" hidden>
+        <div class="section-heading"><h2 id="selection-heading">Selected meeting</h2><p id="selection-availability"></p></div>
+        <div class="field-control"><label for="meeting-summary">Times to share</label><textarea id="meeting-summary" rows="7" readonly spellcheck="false"></textarea></div>
+        <div class="download-actions"><button class="pill-link pill-link--secondary" id="copy-meeting" type="button">Copy meeting times</button></div>
+        <p class="tool-status" id="copy-status" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <footer class="site-footer"><p>Private by design: nothing is uploaded or stored.</p></footer>
+  </body>
+</html>

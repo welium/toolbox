@@ -736,6 +736,249 @@
   gap: var(--space-4);
 }
 
+.tool-page button.pill-link {
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.tool-page button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.field-control input[type="text"],
+.field-control input[type="date"],
+.field-control input[type="time"] {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  background: var(--canvas);
+  color: var(--text);
+  font: inherit;
+}
+
+.choice-odds {
+  margin-top: var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.choice-odds li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--divider);
+}
+
+.choice-odds li span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.choice-odds li span:last-child {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.wheel-frame {
+  position: relative;
+  width: min(100%, 28rem);
+  margin-inline: auto;
+  padding-top: 1rem;
+  overflow: hidden;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.wheel-frame canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.wheel-result {
+  margin-top: var(--space-6);
+  font-size: 1.375rem;
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--divider);
+  border-radius: 0.625rem;
+}
+
+.table-scroll:focus-visible {
+  outline: 3px solid var(--accent-contrast);
+  outline-offset: 3px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.data-table caption {
+  padding: var(--space-3);
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--divider);
+}
+
+.data-table thead {
+  background: var(--surface);
+}
+
+.outcome-chart {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.outcome-row {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr) 4.5rem;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.outcome-track {
+  height: 1rem;
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.outcome-fill {
+  height: 100%;
+  background: var(--accent-contrast);
+}
+
+#simulation-progress {
+  width: 100%;
+  accent-color: var(--accent-contrast);
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.inline-form .field-control {
+  flex: 1 1 20rem;
+}
+
+.inline-form button {
+  margin-top: 2rem;
+}
+
+.participant-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.participant-card {
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--divider);
+  border-radius: 0.75rem;
+}
+
+.participant-card legend {
+  padding-inline: var(--space-2);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.participant-card .remove-file {
+  margin-top: var(--space-3);
+}
+
+.planner-scroll {
+  max-height: 38rem;
+}
+
+.planner-table {
+  min-width: 36rem;
+}
+
+.planner-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+
+.planner-table td {
+  min-width: 14rem;
+}
+
+.planner-table td:last-child {
+  min-width: 7rem;
+}
+
+.slot-button {
+  min-height: 44px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--canvas);
+  color: var(--accent-contrast);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.slot-availability {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+}
+
+.slot-availability--working {
+  color: var(--success);
+}
+
+.slot-overlap {
+  background: #ECFDF3;
+}
+
+.slot-selected {
+  background: #EAF5FC;
+}
+
 .field-control select,
 .field-control textarea {
   width: 100%;

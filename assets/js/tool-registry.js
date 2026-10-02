@@ -20,6 +20,27 @@ export const toolRegistry = [
     description: "Calculate a file’s SHA-256 checksum and compare it with an expected hash.",
     status: "enabled",
   },
+  {
+    id: "decision-wheel",
+    title: "Decision Wheel",
+    href: "tools/decision-wheel/",
+    description: "Add choices, adjust their odds, and spin a wheel to decide.",
+    status: "enabled",
+  },
+  {
+    id: "probability-simulator",
+    title: "Probability Simulator",
+    href: "tools/probability-simulator/",
+    description: "Explore coins, dice, and Monty Hall with live results and theoretical odds.",
+    status: "enabled",
+  },
+  {
+    id: "timezone-meeting-planner",
+    title: "Timezone Meeting Planner",
+    href: "tools/timezone-meeting-planner/",
+    description: "Compare local times and find shared working hours across timezones.",
+    status: "enabled",
+  },
 ];
 
 const toolList = document.querySelector("#tool-list");

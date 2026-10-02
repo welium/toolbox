@@ -73,17 +73,48 @@ Open **File Hash Calculator**, select or drop one file of any type, and click **
 
 Hashing uses the browser's Web Crypto API and requires **HTTPS or localhost**. The whole file is read into memory; there is no streaming hash implementation. The always-visible memory warning and explicit calculation action allow users to assess large files before reading them. Files, hashes, and expected checksums are not uploaded or persisted. Clipboard access may require permission; if unavailable, the checksum is selected for manual copying.
 
-## Browser smoke tests
+## Decision Wheel
+
+Open **Decision Wheel** and enter 2–50 choices, one per line. Use `Choice | 2` for an optional weight; weights are positive whole numbers up to 1,000,000 and labels are limited to 80 characters. Blank lines are ignored. Each slice and the odds list reflect its share of the total weight. Duplicate labels remain separate entries.
+
+Each independent spin samples browser randomness with `crypto.getRandomValues`, selects a weighted outcome, and animates the wheel to that slice. Editing is disabled during a spin. Reduced-motion preferences skip the animation. Very small slices may omit canvas labels; the full accessible choices/odds list and announced result remain available. Inputs and results only live in the current page session.
+
+## Probability Simulator
+
+Choose a fair coin, fair six-sided die, or Monty Hall experiment. Run 1–1,000,000 trials at a time, up to 10,000,000 accumulated trials. Results update in batches with an observed-frequency bar chart, exact counts, theoretical probabilities, and differences in percentage points. **Stop** retains completed trials; **Reset results** or changing the experiment cancels pending work and clears the sample.
+
+Monty Hall uses the standard assumptions: one prize behind three doors; a knowledgeable host always reveals an unchosen goat and offers a switch. Each trial compares both strategies on the same game. By symmetry the initial door is fixed, so staying wins exactly when the random prize is behind it (1/3), and switching wins otherwise (2/3). Trials use `Math.random` for education, not secure randomness. Small timer-scheduled batches keep controls responsive without adding a worker or dependency.
+
+## Timezone Meeting Planner
+
+Add up to six distinct IANA timezones (or UTC), with local working hours and either Monday–Friday or every-day availability. The defaults are New York and London, 09:00–17:00 on weekdays. City suggestions use `Intl.supportedValuesOf` when available; valid browser-recognized IANA names can also be entered directly. Equivalent timezone aliases are deduplicated.
+
+Choose a **UTC reference date** from 2000–2100 and a duration of 30, 60, 90, or 120 minutes. The comparison table covers 48 possible start times on that UTC day at half-hour intervals, showing each city's local date, time, and offset. Using a UTC reference avoids ambiguity during repeated or nonexistent local hours. `Intl.DateTimeFormat` applies the browser's timezone/DST rules for each instant; future rule changes require up-to-date browser timezone data.
+
+A slot fits only when every minute of the entire meeting is inside all participants' working hours. Minute-level checks handle fractional-hour offsets, midnight, and DST changes; prefix sums keep duration checks inexpensive. Working hours are same-local-day intervals; overnight schedules and public holidays are not supported. Filter to shared slots, select a start time, and copy the local meeting ranges. The selected slot can also be outside working hours, with a warning in the shared text. No calendar integrations, network lookups, or saved preferences are used.
+
+## Tests
+
+Timezone logic tests use only Node.js:
+
+```sh
+node --test scripts/test-timezone-planner.mjs
+```
+
+They cover seasonal/DST offsets, different DST transition dates, repeated/skipped hours, fractional-hour offsets, local-day rollover, full-duration availability, and input validation.
+
+### Browser smoke tests
 
 With the site served at `http://127.0.0.1:8000` and Playwright CLI available, run:
 
 ```sh
 playwright-cli open http://127.0.0.1:8000/
 playwright-cli run-code --filename=scripts/test-file-tools.js
+playwright-cli run-code --filename=scripts/test-interactive-tools.js
 playwright-cli close
 ```
 
-These tests cover the new tools' crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
+The file-tool tests cover crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The interactive-tool tests cover weighted selections, simulation outcomes and cancellation, planner controls and meeting summaries, and mobile layouts. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
 
 ## Project conventions
 
