@@ -199,7 +199,7 @@
   color: var(--text-secondary);
 }
 
-/* Stitch tool page */
+/* Tool pages */
 .tool-page [hidden] {
   display: none !important;
 }
@@ -721,6 +721,37 @@
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.preview-frame img {
+  display: block;
+  max-width: 100%;
+  max-height: min(70vh, 35rem);
+  object-fit: contain;
+}
+
+.compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-4);
+}
+
+.field-control select,
+.field-control textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  background: var(--canvas);
+  color: var(--text);
+  font: inherit;
+}
+
+.field-control textarea {
+  resize: vertical;
+  overflow-wrap: anywhere;
+  font-family: monospace;
 }
 
 .download-actions {

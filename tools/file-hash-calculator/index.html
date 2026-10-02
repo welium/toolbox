@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFFFFF">
+    <title>File Hash Calculator — Toolbox</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <script type="module" src="../../assets/js/file-hash-calculator.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../../">Toolbox</a>
+      <nav class="site-nav" aria-label="Main navigation"><a class="home-link" href="../../">Home</a></nav>
+      <p class="header-note">Files stay in your browser</p>
+    </header>
+    <main class="page-content tool-page">
+      <div class="tool-toolbar"><div class="tool-heading">
+        <a class="back-link" href="../../">← Back to tools</a>
+        <h1>File Hash Calculator</h1><p>Calculate SHA-256 locally and check a file against an expected checksum.</p>
+      </div></div>
+      <noscript><p class="tool-warning">Turn on JavaScript to use this tool.</p></noscript>
+      <div class="tool-status" id="tool-status" role="status" aria-live="polite"></div>
+      <div class="tool-error" id="tool-error" role="alert" hidden></div>
+      <section class="tool-section" aria-labelledby="intake-heading">
+        <div class="section-heading"><h2 id="intake-heading">1. Choose a file</h2><p>Any file type. Nothing is uploaded.</p></div>
+        <label class="dropzone" id="dropzone" for="file-input">
+          <input class="visually-hidden" id="file-input" type="file" aria-describedby="memory-hint">
+          <span class="dropzone-title">Drop a file here or choose a file</span>
+          <span class="dropzone-detail">One file at a time, including empty files.</span>
+        </label>
+        <p class="field-hint" id="file-details">No file selected.</p>
+        <p class="tool-warning" id="memory-hint">The entire file is read into memory to calculate its hash. Large files may be slow or fail on devices with limited RAM.</p>
+        <div class="download-actions"><button class="pill-link pill-link--primary" id="hash-button" type="button" disabled>Calculate SHA-256</button></div>
+      </section>
+      <section class="tool-section" id="result-section" aria-labelledby="result-heading" hidden>
+        <div class="section-heading"><h2 id="result-heading">2. SHA-256 checksum</h2></div>
+        <div class="field-control"><label for="hash-result">Hexadecimal checksum</label><textarea class="hash-output" id="hash-result" rows="3" readonly spellcheck="false"></textarea></div>
+        <div class="download-actions"><button class="pill-link pill-link--secondary" id="copy-hash" type="button">Copy checksum</button></div>
+      </section>
+      <section class="tool-section" aria-labelledby="compare-heading">
+        <div class="section-heading"><h2 id="compare-heading">Compare checksum</h2><p>Optional. Paste exactly 64 hexadecimal characters.</p></div>
+        <div class="field-control"><label for="expected-hash">Expected SHA-256</label><textarea id="expected-hash" rows="3" spellcheck="false" aria-describedby="comparison" placeholder="Paste an expected SHA-256 checksum"></textarea></div>
+        <p class="tool-status" id="comparison" role="status" aria-live="polite">Calculate a checksum to compare.</p>
+        <p class="field-hint">A match confirms identical contents to the expected hash, not that a file is safe. Obtain the expected checksum from a trusted source.</p>
+      </section>
+    </main>
+    <footer class="site-footer"><p>Private by design: files stay in your browser and nothing is stored.</p></footer>
+  </body>
+</html>

@@ -59,6 +59,32 @@ Use image formats your browser can decode (commonly JPEG, PNG, WebP, GIF, or BMP
 - The JS/canvas pipeline aims for order-equivalence and visual continuity, not byte-identical pixels to the Python implementation. Decoder, floating-point, alpha-compositing, and JPEG encoder differences can change pixel values and reported costs slightly.
 - This is a light-only page. There is no persistence, dark mode, or server-side processing.
 
+## Image Resizer & Converter
+
+Open **Image Resizer & Converter** and select or drop one browser-supported image. Set the crop's left/top coordinates and width/height in original, orientation-corrected pixels; the source preview outlines the retained region. **Use full image** resets both crop and output dimensions. Changing the crop resets output dimensions to the crop size.
+
+Set output dimensions; **Keep aspect ratio** links width and height to the crop's aspect ratio, rounded to whole pixels. Uncheck it to stretch the image. Choose PNG, JPEG, or WebP, then **Create image** to preview and download the encoded result with a file-size comparison. Quality (1–100%, default 92%) applies to JPEG and WebP only. JPEG composites transparency onto white; PNG and WebP retain transparency. Changes to inputs invalidate the previous download.
+
+Processing uses `createImageBitmap` with EXIF orientation and Canvas 2D; a recent evergreen browser is required. Animated inputs use a single decoded frame. Output is limited to 16,384 pixels per side and 32 million pixels total to bound canvas allocation; browser/device limits may be lower. Large source images still require substantial decoding memory. Unsupported inputs, canvas/encoding failures, and unsupported output formats are reported. Re-encoding does not preserve source EXIF or other metadata and is not a lossless round-trip guarantee.
+
+## File Hash Calculator
+
+Open **File Hash Calculator**, select or drop one file of any type, and click **Calculate SHA-256**. Empty files are supported. Copy the lowercase hexadecimal checksum or paste an expected checksum to compare. Comparison ignores hexadecimal case and surrounding whitespace; the expected value must otherwise be exactly 64 hexadecimal characters. A matching checksum verifies content against the expected hash, not file safety or source authenticity.
+
+Hashing uses the browser's Web Crypto API and requires **HTTPS or localhost**. The whole file is read into memory; there is no streaming hash implementation. The always-visible memory warning and explicit calculation action allow users to assess large files before reading them. Files, hashes, and expected checksums are not uploaded or persisted. Clipboard access may require permission; if unavailable, the checksum is selected for manual copying.
+
+## Browser smoke tests
+
+With the site served at `http://127.0.0.1:8000` and Playwright CLI available, run:
+
+```sh
+playwright-cli open http://127.0.0.1:8000/
+playwright-cli run-code --filename=scripts/test-file-tools.js
+playwright-cli close
+```
+
+These tests cover the new tools' crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
+
 ## Project conventions
 
 - Keep the app static and client-side: no framework, package manager, build step, or backend.

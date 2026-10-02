@@ -7,10 +7,18 @@ export const toolRegistry = [
     status: "enabled",
   },
   {
-    id: "more-tools-placeholder",
-    title: "Placeholder — not a tool",
-    description: "Reserved for a future tool. This item has no link or functionality.",
-    status: "placeholder",
+    id: "image-resizer-converter",
+    title: "Image Resizer & Converter",
+    href: "tools/image-resizer-converter/",
+    description: "Crop, resize, and convert an image to PNG, JPEG, or WebP locally.",
+    status: "enabled",
+  },
+  {
+    id: "file-hash-calculator",
+    title: "File Hash Calculator",
+    href: "tools/file-hash-calculator/",
+    description: "Calculate a file’s SHA-256 checksum and compare it with an expected hash.",
+    status: "enabled",
   },
 ];
 

@@ -12,3 +12,6 @@ Thumbs.db
 
 # Generated deployment assets
 dist/
+
+# Local browser test artifacts
+.playwright-cli/

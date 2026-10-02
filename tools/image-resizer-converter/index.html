@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFFFFF">
+    <title>Image Resizer &amp; Converter — Toolbox</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <script type="module" src="../../assets/js/image-resizer-converter.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../../">Toolbox</a>
+      <nav class="site-nav" aria-label="Main navigation"><a class="home-link" href="../../">Home</a></nav>
+      <p class="header-note">Files stay in your browser</p>
+    </header>
+    <main class="page-content tool-page">
+      <div class="tool-toolbar"><div class="tool-heading">
+        <a class="back-link" href="../../">← Back to tools</a>
+        <h1>Image Resizer &amp; Converter</h1>
+        <p>Crop first, resize, then save as PNG, JPEG, or WebP.</p>
+      </div></div>
+      <noscript><p class="tool-warning">Turn on JavaScript to use this tool.</p></noscript>
+      <div class="tool-status" id="tool-status" role="status" aria-live="polite"></div>
+      <div class="tool-error" id="tool-error" role="alert" hidden></div>
+      <section class="tool-section" aria-labelledby="intake-heading">
+        <div class="section-heading"><h2 id="intake-heading">1. Add an image</h2><p>No uploads. No storage.</p></div>
+        <label class="dropzone" id="dropzone" for="image-input">
+          <input class="visually-hidden" id="image-input" type="file" accept="image/*" aria-describedby="image-hint">
+          <span class="dropzone-title">Drop an image here or choose a file</span>
+          <span class="dropzone-detail" id="image-hint">One browser-supported image at a time. Animated images use a single decoded frame.</span>
+        </label>
+        <p class="field-hint" id="file-details">No image selected.</p>
+      </section>
+      <form id="image-form" hidden>
+        <section class="tool-section" aria-labelledby="crop-heading">
+          <div class="section-heading"><h2 id="crop-heading">2. Crop</h2><p>Coordinates are in original image pixels, starting at the top-left.</p></div>
+          <div class="compact-grid">
+            <div class="field-control"><label for="crop-x">Left (px)</label><input id="crop-x" type="number" min="0" step="1" required></div>
+            <div class="field-control"><label for="crop-y">Top (px)</label><input id="crop-y" type="number" min="0" step="1" required></div>
+            <div class="field-control"><label for="crop-width">Crop width (px)</label><input id="crop-width" type="number" min="1" step="1" required></div>
+            <div class="field-control"><label for="crop-height">Crop height (px)</label><input id="crop-height" type="number" min="1" step="1" required></div>
+          </div>
+          <div class="download-actions"><button class="pill-link pill-link--secondary" id="reset-crop" type="button">Use full image</button></div>
+          <p class="field-hint" id="crop-description">The outlined region is kept. Everything outside it is removed.</p>
+          <div class="preview-frame"><canvas id="source-preview" role="img" aria-label="Original image with crop outline" aria-describedby="crop-description"></canvas></div>
+        </section>
+        <section class="tool-section" aria-labelledby="resize-heading">
+          <div class="section-heading"><h2 id="resize-heading">3. Resize &amp; convert</h2><p>Aspect ratio follows the cropped region.</p></div>
+          <div class="compact-grid">
+            <div class="field-control"><label for="output-width">Output width (px)</label><input id="output-width" type="number" min="1" step="1" required></div>
+            <div class="field-control"><label for="output-height">Output height (px)</label><input id="output-height" type="number" min="1" step="1" required></div>
+            <div class="field-control"><label for="output-format">Format</label><select id="output-format"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div>
+            <div class="field-control"><label for="quality">Quality (%)</label><input id="quality" type="number" min="1" max="100" step="1" value="92" disabled aria-describedby="quality-hint"><span class="field-hint" id="quality-hint">JPEG and WebP only.</span></div>
+          </div>
+          <label class="checkbox-control"><input id="lock-ratio" type="checkbox" checked><span>Keep aspect ratio</span></label>
+          <p class="field-hint">JPEG uses a white background for transparent pixels. PNG and WebP retain transparency. Large images may exceed browser memory or canvas limits.</p>
+          <div class="download-actions"><button class="pill-link pill-link--primary" id="convert-button" type="submit">Create image</button></div>
+        </section>
+      </form>
+      <section class="tool-section" id="result-section" aria-labelledby="result-heading" hidden>
+        <div class="section-heading"><h2 id="result-heading">4. Result</h2><p id="result-details"></p></div>
+        <div class="preview-frame"><img id="result-preview" alt="Converted image preview"></div>
+        <p class="field-hint" id="size-comparison"></p>
+        <div class="download-actions"><a class="pill-link pill-link--primary" id="download-image">Download image</a></div>
+      </section>
+    </main>
+    <footer class="site-footer"><p>Private by design: files stay in your browser and nothing is stored.</p></footer>
+  </body>
+</html>
