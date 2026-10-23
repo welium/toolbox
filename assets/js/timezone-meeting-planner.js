@@ -1,3 +1,5 @@
+import { t, locale } from "./i18n.js";
+
 import { buildSlots, canonicalZone } from "./timezone-planner.js";
 
 const get = (id) => document.getElementById(id);
@@ -15,8 +17,8 @@ function showError(message) {
 
 function addParticipant(zone) {
   const canonical = canonicalZone(zone);
-  if (participants.length >= 6) throw new Error("At most 6 timezones can be compared. Remove one before adding another.");
-  if (participants.some((person) => person.zone === canonical)) throw new Error("That timezone is already in the planner.");
+  if (participants.length >= 6) throw new Error(t("At most 6 timezones can be compared. Remove one before adding another."));
+  if (participants.some((person) => person.zone === canonical)) throw new Error(t("That timezone is already in the planner."));
   participants.push({ id: nextId++, zone: canonical, start: "09:00", end: "17:00", days: "weekdays" });
 }
 
@@ -30,7 +32,7 @@ function renderParticipants() {
     fieldset.append(legend);
     const grid = document.createElement("div");
     grid.className = "compact-grid";
-    for (const [key, labelText] of [["start", "Work starts"], ["end", "Work ends"], ["days", "Working days"]]) {
+    for (const [key, labelText] of [["start", t("Work starts")], ["end", t("Work ends")], ["days", t("Working days")]]) {
       const field = document.createElement("div");
       field.className = "field-control";
       const label = document.createElement("label");
@@ -40,7 +42,7 @@ function renderParticipants() {
       const input = document.createElement(key === "days" ? "select" : "input");
       input.id = id;
       if (key === "days") {
-        for (const [value, text] of [["weekdays", "Monday–Friday"], ["everyday", "Every day"]]) {
+        for (const [value, text] of [["weekdays", t("Monday–Friday")], ["everyday", t("Every day")]]) {
           const option = document.createElement("option");
           option.value = value;
           option.textContent = text;
@@ -60,8 +62,8 @@ function renderParticipants() {
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "remove-file";
-    remove.textContent = "Remove";
-    remove.setAttribute("aria-label", `Remove ${person.zone}`);
+    remove.textContent = t("Remove");
+    remove.setAttribute("aria-label", t("Remove {p0}", { p0: person.zone }));
     remove.addEventListener("click", () => {
       participants.splice(participants.indexOf(person), 1);
       renderParticipants();
@@ -77,12 +79,12 @@ function selectSlot(slot) {
   revision++;
   selectedTime = slot.time;
   get("selection-section").hidden = false;
-  get("selection-availability").textContent = slot.available ? "Within everyone's working hours" : "Outside at least one timezone's working hours";
+  get("selection-availability").textContent = slot.available ? t("Within everyone's working hours") : t("Outside at least one timezone's working hours");
   const end = new Date(slot.time + Number(get("duration").value) * 60000).toISOString();
   get("meeting-summary").value = [
-    `Meeting (${get("duration").value} minutes)`,
-    `UTC: ${new Date(slot.time).toISOString()} – ${end}`,
-    ...slot.cells.map((cell) => `${cell.zone}: ${cell.text} – ${cell.endText}${cell.available ? "" : " [outside working hours]"}`),
+    t("Meeting ({p0} minutes)", { p0: get("duration").value }),
+    t("UTC: {p0} – {p1}", { p0: new Date(slot.time).toISOString(), p1: end }),
+    ...slot.cells.map((cell) => `${cell.zone}: ${cell.text} – ${cell.endText}${cell.available ? "" : t(" [outside working hours]")}`),
   ].join("\n");
   get("copy-status").textContent = "";
   for (const row of get("slots-body").children) row.classList.toggle("slot-selected", Number(row.dataset.time) === selectedTime);
@@ -90,7 +92,7 @@ function selectSlot(slot) {
 
 function renderSlots() {
   const head = document.createElement("tr");
-  for (const title of ["Start (UTC)", ...participants.map((person) => person.zone.replaceAll("_", " ")), "Shared hours"]) {
+  for (const title of [t("Start (UTC)"), ...participants.map((person) => person.zone.replaceAll("_", " ")), t("Shared hours")]) {
     const cell = document.createElement("th");
     cell.scope = "col";
     cell.textContent = title;
@@ -99,9 +101,9 @@ function renderSlots() {
   get("slots-head").replaceChildren(head);
   get("slots-body").replaceChildren();
   const count = slots.filter((slot) => slot.available).length;
-  get("slot-summary").textContent = `${count} of 48 start times fit everyone.`;
+  get("slot-summary").textContent = t("{p0} of 48 start times fit everyone.", { p0: count });
   get("no-overlap").hidden = count > 0;
-  get("table-caption").textContent = `${get("meeting-date").value} UTC — ${get("duration").value}-minute meetings. Local dates and offsets shown for every city.`;
+  get("table-caption").textContent = t("{p0} UTC — {p1}-minute meetings. Local dates and offsets shown for every city.", { p0: get("meeting-date").value, p1: get("duration").value });
   for (const slot of slots) {
     if (get("only-overlap").checked && !slot.available) continue;
     const row = document.createElement("tr");
@@ -114,7 +116,7 @@ function renderSlots() {
     button.type = "button";
     button.className = "slot-button";
     button.textContent = slot.utc;
-    button.setAttribute("aria-label", `Select ${slot.utc} UTC`);
+    button.setAttribute("aria-label", t("Select {p0} UTC", { p0: slot.utc }));
     button.addEventListener("click", () => selectSlot(slot));
     start.append(button);
     row.append(start);
@@ -124,12 +126,12 @@ function renderSlots() {
       time.textContent = value.text;
       const availability = document.createElement("span");
       availability.className = `slot-availability${value.available ? " slot-availability--working" : ""}`;
-      availability.textContent = value.available ? "Working hours" : "Outside hours";
+      availability.textContent = value.available ? t("Working hours") : t("Outside hours");
       cell.append(time, availability);
       row.append(cell);
     }
     const shared = document.createElement("td");
-    shared.textContent = slot.available ? "Yes" : "No";
+    shared.textContent = slot.available ? t("Yes") : t("No");
     row.append(shared);
     get("slots-body").append(row);
   }
@@ -142,7 +144,7 @@ function update() {
   get("selection-section").hidden = true;
   get("meeting-summary").value = "";
   try {
-    slots = buildSlots(get("meeting-date").value, Number(get("duration").value), participants);
+    slots = buildSlots(get("meeting-date").value, Number(get("duration").value), participants, locale === "en" ? "en-GB" : locale);
     renderSlots();
   } catch (cause) {
     slots = [];
@@ -150,7 +152,7 @@ function update() {
     get("slots-body").replaceChildren();
     get("slot-summary").textContent = "";
     get("no-overlap").hidden = true;
-    showError(cause.message);
+    showError(t(cause.message));
   }
 }
 
@@ -165,7 +167,7 @@ get("add-zone-form").addEventListener("submit", (event) => {
     update();
   } catch (cause) {
     get("zone-input").setAttribute("aria-invalid", "true");
-    showError(cause instanceof RangeError ? "Unknown timezone. Choose an IANA name from the suggestions or enter UTC." : cause.message);
+    showError(cause instanceof RangeError ? t("Unknown timezone. Choose an IANA name from the suggestions or enter UTC.") : cause.message);
   }
 });
 get("meeting-date").addEventListener("change", update);
@@ -176,12 +178,12 @@ get("copy-meeting").addEventListener("click", async () => {
   const value = get("meeting-summary").value;
   try {
     await navigator.clipboard.writeText(value);
-    if (revision === current) get("copy-status").textContent = "Meeting times copied.";
+    if (revision === current) get("copy-status").textContent = t("Meeting times copied.");
   } catch {
     if (revision !== current) return;
     get("meeting-summary").focus();
     get("meeting-summary").select();
-    get("copy-status").textContent = "Clipboard unavailable. Copy the selected meeting times manually.";
+    get("copy-status").textContent = t("Clipboard unavailable. Copy the selected meeting times manually.");
   }
 });
 

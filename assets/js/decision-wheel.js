@@ -1,3 +1,5 @@
+import { t, locale } from "./i18n.js";
+
 const choices = document.getElementById("choices");
 const button = document.getElementById("spin-button");
 const error = document.getElementById("tool-error");
@@ -11,23 +13,23 @@ let rotation = 0;
 
 export function parseChoices(text) {
   const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  if (lines.length < 2 || lines.length > 50) throw new Error("Enter between 2 and 50 choices.");
+  if (lines.length < 2 || lines.length > 50) throw new Error(t("Enter between 2 and 50 choices."));
   return lines.map((line, index) => {
     const parts = line.split("|");
     const label = parts[0].trim();
     const weight = parts.length === 1 ? 1 : Number(parts[1].trim());
     if (!label || label.length > 80 || parts.length > 2) {
-      throw new Error(`Line ${index + 1}: use a label of 1–80 characters, optionally followed by | weight.`);
+      throw new Error(t("Line {p0}: use a label of 1–80 characters, optionally followed by | weight.", { p0: index + 1 }));
     }
     if (!Number.isInteger(weight) || weight < 1 || weight > 1_000_000) {
-      throw new Error(`Line ${index + 1}: weight must be a whole number from 1 to 1,000,000.`);
+      throw new Error(t("Line {p0}: weight must be a whole number from 1 to 1,000,000.", { p0: index + 1 }));
     }
     return { label, weight };
   });
 }
 
 export function pickChoice(options, random) {
-  if (!Number.isFinite(random) || random < 0 || random >= 1) throw new Error("Random value must be in [0, 1).");
+  if (!Number.isFinite(random) || random < 0 || random >= 1) throw new Error(t("Random value must be in [0, 1)."));
   const total = options.reduce((sum, item) => sum + item.weight, 0);
   const target = random * total;
   let before = 0;
@@ -35,19 +37,19 @@ export function pickChoice(options, random) {
     if (target < before + options[i].weight) return { index: i, center: tau * (before + options[i].weight / 2) / total };
     before += options[i].weight;
   }
-  throw new Error("Random value must be in [0, 1).");
+  throw new Error(t("Random value must be in [0, 1)."));
 }
 
 function refresh() {
   error.hidden = true;
-  result.textContent = "Ready when you are.";
+  result.textContent = t("Ready when you are.");
   canvas.style.transform = "rotate(0rad)";
   rotation = 0;
   const odds = document.getElementById("choice-odds");
   odds.replaceChildren();
   ctx?.clearRect(0, 0, 600, 600);
   try {
-    if (!ctx || !globalThis.crypto?.getRandomValues) throw new Error("This tool requires Canvas 2D and browser randomness support.");
+    if (!ctx || !globalThis.crypto?.getRandomValues) throw new Error(t("This tool requires Canvas 2D and browser randomness support."));
     items = parseChoices(choices.value);
     choices.setAttribute("aria-invalid", "false");
     const total = items.reduce((sum, item) => sum + item.weight, 0);
@@ -78,7 +80,9 @@ function refresh() {
       const chance = document.createElement("span");
       label.textContent = item.label;
       const percentage = item.weight / total * 100;
-      chance.textContent = percentage < 0.01 ? "<0.01%" : `${percentage.toFixed(2)}%`;
+      chance.textContent = percentage < 0.01
+        ? `<${(0.0001).toLocaleString(locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : (percentage / 100).toLocaleString(locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 });
       li.append(label, chance);
       odds.append(li);
       angle += size;
@@ -98,7 +102,7 @@ button.addEventListener("click", async () => {
   if (!items.length || button.disabled) return;
   button.disabled = true;
   choices.disabled = true;
-  result.textContent = "Spinning…";
+  result.textContent = t("Spinning…");
   try {
     const random = crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
     const selected = pickChoice(items, random);
@@ -111,11 +115,11 @@ button.addEventListener("click", async () => {
     rotation = next % tau;
     canvas.style.transform = `rotate(${rotation}rad)`;
     animation.cancel();
-    result.textContent = `Selected: ${items[selected.index].label}`;
+    result.textContent = t("Selected: {p0}", { p0: items[selected.index].label });
   } catch (cause) {
-    error.textContent = `Could not spin the wheel. ${cause.message}`;
+    error.textContent = t("Could not spin the wheel. {p0}", { p0: cause.message });
     error.hidden = false;
-    result.textContent = "Try spinning again.";
+    result.textContent = t("Try spinning again.");
   } finally {
     button.disabled = false;
     choices.disabled = false;

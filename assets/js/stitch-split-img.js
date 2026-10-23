@@ -1,3 +1,5 @@
+import { t } from "./i18n.js";
+
 import {
   DEFAULT_STRIP_WIDTH,
   StitchValidationError,
@@ -98,7 +100,7 @@ function updateControls() {
   const invalid = files.filter((record) => record.state === "error").length;
   const locked = busy || downloading;
   elements.runButton.disabled = locked || pendingDecodes > 0 || available < 2;
-  elements.runButton.textContent = busy ? "Stitching…" : "Stitch images";
+  elements.runButton.textContent = busy ? t("Stitching…") : t("Stitch images");
   elements.fileInput.disabled = locked;
   elements.stripWidth.disabled = locked;
   elements.verbose.disabled = locked;
@@ -107,21 +109,21 @@ function updateControls() {
     input.disabled = locked;
   });
 
-  let hint = "At least two valid images are required to stitch.";
-  if (busy) hint = "Stitching is in progress. Please wait.";
-  else if (pendingDecodes > 0) hint = "Waiting for image decoding to finish…";
-  else if (available >= 2) hint = `${available} valid image${available === 1 ? "" : "s"} ready. The optimizer chooses their final order.`;
-  else if (files.length > 0 && invalid === files.length) hint = "No usable images: every selected file failed decoding or has an unsupported format. Choose browser-supported image files and try again.";
-  else if (invalid > 0) hint = "At least two valid images are required; remove or replace files with errors.";
-  else if (files.length === 1) hint = "Add at least one more valid image to enable stitching.";
-  else if (files.length > 1) hint = "At least two valid images are required; check the file errors below.";
+  let hint = t("At least two valid images are required to stitch.");
+  if (busy) hint = t("Stitching is in progress. Please wait.");
+  else if (pendingDecodes > 0) hint = t("Waiting for image decoding to finish…");
+  else if (available >= 2) hint = t("{p0} valid images ready. The optimizer chooses their final order.", { p0: available });
+  else if (files.length > 0 && invalid === files.length) hint = t("No usable images: every selected file failed decoding or has an unsupported format. Choose browser-supported image files and try again.");
+  else if (invalid > 0) hint = t("At least two valid images are required; remove or replace files with errors.");
+  else if (files.length === 1) hint = t("Add at least one more valid image to enable stitching.");
+  else if (files.length > 1) hint = t("At least two valid images are required; check the file errors below.");
   elements.countHint.textContent = hint;
   elements.countHint.classList.toggle("run-explanation--error", !locked && pendingDecodes === 0 && available < 2);
 
   const warnLarge = available > 10;
   elements.largeWarning.hidden = !warnLarge;
   elements.largeWarning.textContent = warnLarge
-    ? `The exact optimizer is practical for 10 or fewer images. ${available > 12 ? "Jobs above 12 images are refused; split this job into smaller groups." : "This job is allowed, but may take longer."}`
+    ? `${t("The exact optimizer is practical for 10 or fewer images.")} ${available > 12 ? t("Jobs above 12 images are refused; split this job into smaller groups.") : t("This job is allowed, but may take longer.")}`
     : "";
 }
 
@@ -155,7 +157,7 @@ function renderFiles() {
   if (sorted.length === 0) {
     const empty = document.createElement("li");
     empty.className = "file-list-empty";
-    empty.textContent = "No images selected.";
+    empty.textContent = t("No images selected.");
     elements.fileList.append(empty);
     return;
   }
@@ -174,15 +176,15 @@ function renderFiles() {
     details.textContent = record.state === "ready"
       ? `${record.width} × ${record.height} px · ${formatBytes(record.file.size)}`
       : record.state === "pending"
-        ? `Reading image · ${formatBytes(record.file.size)}`
+        ? t("Reading image · {p0}", { p0: formatBytes(record.file.size) })
         : `${formatBytes(record.file.size)} · ${record.error}`;
     info.append(name, details);
 
     const remove = document.createElement("button");
     remove.className = "remove-file";
     remove.type = "button";
-    remove.textContent = "Remove";
-    remove.setAttribute("aria-label", `Remove ${record.file.name}`);
+    remove.textContent = t("Remove");
+    remove.setAttribute("aria-label", t("Remove {p0}", { p0: record.file.name }));
     remove.disabled = busy || downloading;
     remove.addEventListener("click", (event) => {
       event.preventDefault();
@@ -226,13 +228,13 @@ async function decodeImageElement(file) {
     } else {
       await new Promise((resolve, reject) => {
         image.onload = resolve;
-        image.onerror = () => reject(new Error("the browser could not decode this image"));
+        image.onerror = () => reject(new Error(t("the browser could not decode this image")));
         image.src = objectUrl;
       });
     }
     return image;
   } catch (error) {
-    throw new Error(`fallback image decoding failed: ${error.message}`);
+    throw new Error(t("fallback image decoding failed: {p0}", { p0: error.message }));
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
@@ -243,7 +245,7 @@ async function decodeFile(file) {
   let bitmap = null;
   let usedFallback = false;
   if (typeof file.type === "string" && file.type && !file.type.startsWith("image/")) {
-    throw new Error(`unsupported file type (${file.type}); choose an image file`);
+    throw new Error(t("unsupported file type ({p0}); choose an image file", { p0: file.type }));
   }
 
   if (typeof createImageBitmap === "function") {
@@ -255,7 +257,7 @@ async function decodeFile(file) {
       try {
         source = await decodeImageElement(file);
       } catch (fallbackError) {
-        throw new Error(`image decode failed (${bitmapError.message}; ${fallbackError.message})`);
+        throw new Error(t("image decode failed ({p0}; {p1})", { p0: bitmapError.message, p1: fallbackError.message }));
       }
     }
   } else {
@@ -267,13 +269,13 @@ async function decodeFile(file) {
     const width = source.width || source.naturalWidth;
     const height = source.height || source.naturalHeight;
     if (!Number.isSafeInteger(width) || width <= 0 || !Number.isSafeInteger(height) || height <= 0) {
-      throw new Error("the decoded image has invalid dimensions");
+      throw new Error(t("the decoded image has invalid dimensions"));
     }
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) throw new Error("2D canvas is unavailable");
+    if (!context) throw new Error(t("2D canvas is unavailable"));
     context.fillStyle = "#FFFFFF";
     context.fillRect(0, 0, width, height);
     context.drawImage(source, 0, 0);
@@ -332,7 +334,7 @@ function addFiles(fileCollection) {
   pendingDecodes += newRecords.length;
   renderFiles();
   updateControls();
-  setStatus(`Reading ${newRecords.length} image${newRecords.length === 1 ? "" : "s"}…`, "loading");
+  setStatus(t("Reading {p0} images…", { p0: newRecords.length }), "loading");
 
   // Decode one file at a time to avoid retaining several full-size decoder
   // surfaces concurrently on memory-constrained devices.
@@ -346,13 +348,13 @@ function addFiles(fileCollection) {
     if (!newRecords.some((record) => files.includes(record))) {
       setStatus("");
     } else if (newRecords.some((record) => record.usedFallback)) {
-      setStatus("An image used the fallback decoder; EXIF rotation may not be applied.", "warning");
+      setStatus(t("An image used the fallback decoder; EXIF rotation may not be applied."), "warning");
     } else if (pendingDecodes === 0) {
       const failed = files.some((record) => record.state === "error");
       setStatus(
         failed
-          ? "Image intake complete. Check file errors below; successfully decoded files remain selected."
-          : "Image intake complete. Files stay in this browser.",
+          ? t("Image intake complete. Check file errors below; successfully decoded files remain selected.")
+          : t("Image intake complete. Files stay in this browser."),
         failed ? "warning" : "success",
       );
     }
@@ -363,7 +365,7 @@ function validateStripWidth(showError) {
   const k = elements.stripWidth.valueAsNumber;
   const valid = Number.isInteger(k) && k > 0;
   if (showError) {
-    elements.stripWidthError.textContent = valid ? "" : "Enter a positive whole number.";
+    elements.stripWidthError.textContent = valid ? "" : t("Enter a positive whole number.");
     elements.stripWidthError.hidden = valid;
     elements.stripWidth.setAttribute("aria-invalid", String(!valid));
   }
@@ -374,9 +376,8 @@ function dimensionError(records, axis) {
   const shared = axis === "horizontal" ? records[0].height : records[0].width;
   const matches = records.every((record) => (axis === "horizontal" ? record.height : record.width) === shared);
   if (matches) return null;
-  const dimension = axis === "horizontal" ? "heights" : "widths";
   const details = records.map((record) => `  ${record.file.name}: ${record.width}x${record.height}`).join("\n");
-  return new StitchValidationError(`images must have equal ${dimension} for ${axis} stitching:\n${details}`);
+  return new StitchValidationError(`${t("Images must have equal heights for horizontal stitching, or equal widths for vertical stitching.")}\n${details}`);
 }
 
 function yieldToBrowser() {
@@ -394,7 +395,7 @@ async function solveAxisAsync(features, records, axis, k) {
   ));
 
   for (let row = 0; row < features.length; row += 1) {
-    setStatus(`Comparing ${axis} seams (${row + 1} of ${features.length})…`, "loading");
+    setStatus(t("Comparing {p0} seams ({p1} of {p2})…", { p0: t(axis === "horizontal" ? "Horizontal" : "Vertical"), p1: row + 1, p2: features.length }), "loading");
     for (let column = 0; column < features.length; column += 1) {
       if (row !== column) matrix[row][column] = seamCost(features[row], features[column], clampedK, axis);
     }
@@ -410,7 +411,7 @@ async function solveAxisAsync(features, records, axis, k) {
     clampedK,
     clamped,
     warning: clamped
-      ? `Strip width ${k} exceeds the narrowest relevant image dimension (${narrowest}); clamped to ${narrowest}.`
+      ? t("Strip width {p0} exceeds the narrowest relevant image dimension ({p1}); clamped to {p2}.", { p0: k, p1: narrowest, p2: narrowest })
       : null,
     ...ordering,
     normalizedTotal: ordering.totalCost / ordering.seamCosts.length,
@@ -436,7 +437,7 @@ async function selectAxisAsync(features, records, requestedAxis, k) {
   const validAxes = Object.keys(candidates);
   if (validAxes.length === 0) {
     throw new StitchValidationError(
-      `auto axis selection failed; both orientations are invalid:\n  horizontal: ${failures.horizontal}\n  vertical: ${failures.vertical}`,
+      `${t("Both stitch directions are invalid.")}\n${failures.horizontal}\n${failures.vertical}`,
     );
   }
   let selected = candidates.horizontal ?? candidates[validAxes[0]];
@@ -457,13 +458,13 @@ function addDefinition(list, label, value) {
 function renderMatrix(candidate, records) {
   elements.matrix.replaceChildren();
   const caption = document.createElement("caption");
-  caption.textContent = `Directed ${candidate.axis} seam costs in canonical filename order; inf marks the diagonal.`;
+  caption.textContent = t("Directed {p0} seam costs in canonical filename order; inf marks the diagonal.", { p0: t(candidate.axis === "horizontal" ? "Horizontal" : "Vertical") });
   elements.matrix.append(caption);
   const head = document.createElement("thead");
   const headerRow = document.createElement("tr");
   const corner = document.createElement("th");
   corner.scope = "col";
-  corner.textContent = "From ↓ / To →";
+  corner.textContent = t("From ↓ / To →");
   headerRow.append(corner);
   for (const record of records) {
     const cell = document.createElement("th");
@@ -498,7 +499,7 @@ function renderReport(solution, records, requestedAxis, dimensions) {
   const selected = solution.selected;
   const ordered = selected.order.map((index) => records[index]);
   currentReport = { selected, ordered, records, dimensions };
-  elements.reportAxis.textContent = `Selected axis: ${selected.axis}`;
+  elements.reportAxis.textContent = t("Selected axis: {p0}", { p0: t(selected.axis === "horizontal" ? "Horizontal" : "Vertical") });
   elements.orderedFiles.replaceChildren();
   ordered.forEach((record) => {
     const item = document.createElement("li");
@@ -507,9 +508,9 @@ function renderReport(solution, records, requestedAxis, dimensions) {
   });
 
   elements.costSummary.replaceChildren();
-  addDefinition(elements.costSummary, "Total cost", formatCost(selected.totalCost));
-  addDefinition(elements.costSummary, "Normalized per-seam cost", formatCost(selected.normalizedTotal));
-  addDefinition(elements.costSummary, "Result dimensions", `${dimensions.width}x${dimensions.height} px`);
+  addDefinition(elements.costSummary, t("Total cost"), formatCost(selected.totalCost));
+  addDefinition(elements.costSummary, t("Normalized per-seam cost"), formatCost(selected.normalizedTotal));
+  addDefinition(elements.costSummary, t("Result dimensions"), `${dimensions.width}x${dimensions.height} px`);
 
   elements.seamCosts.replaceChildren();
   selected.order.slice(0, -1).forEach((recordIndex, seamIndex) => {
@@ -528,19 +529,19 @@ function renderReport(solution, records, requestedAxis, dimensions) {
     elements.reportNotes.append(note);
   };
   for (const candidate of Object.values(solution.candidates)) {
-    if (candidate.warning) addNote(`${candidate.axis}: ${candidate.warning}`, "report-warning");
+    if (candidate.warning) addNote(`${t(candidate.axis === "horizontal" ? "Horizontal" : "Vertical")}: ${candidate.warning}`, "report-warning");
   }
   if (requestedAxis === "auto") {
     for (const axis of ["horizontal", "vertical"]) {
       if (solution.candidates[axis]) {
         const candidate = solution.candidates[axis];
-        addNote(`${axis[0].toUpperCase()}${axis.slice(1)} candidate: total cost ${formatCost(candidate.totalCost)}; normalized per-seam cost ${formatCost(candidate.normalizedTotal)}.`);
+        addNote(t("{p0}{p1} candidate: total cost {p2}; normalized per-seam cost {p3}.", { p0: t(axis === "horizontal" ? "Horizontal" : "Vertical"), p1: "", p2: formatCost(candidate.totalCost), p3: formatCost(candidate.normalizedTotal) }));
       } else {
-        addNote(`${axis[0].toUpperCase()}${axis.slice(1)} unavailable: ${solution.failures[axis]}`, "report-warning");
+        addNote(t("{p0}{p1} unavailable: {p2}", { p0: t(axis === "horizontal" ? "Horizontal" : "Vertical"), p1: "", p2: solution.failures[axis] }), "report-warning");
       }
     }
     if (Object.keys(solution.failures).length > 0) {
-      addNote(`Auto selected ${selected.axis} because the other orientation was dimensionally invalid.`, "report-warning");
+      addNote(t("Auto selected {p0} because the other orientation was dimensionally invalid.", { p0: t(selected.axis === "horizontal" ? "Horizontal" : "Vertical") }), "report-warning");
     }
   }
 
@@ -570,7 +571,7 @@ function drawPreview(ordered, axis, dimensions, previewOnly) {
   canvas.width = size.width;
   canvas.height = size.height;
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("2D canvas is unavailable for the preview");
+  if (!context) throw new Error(t("2D canvas is unavailable for the preview"));
   context.fillStyle = "#FFFFFF";
   context.fillRect(0, 0, size.width, size.height);
 
@@ -589,7 +590,7 @@ function drawPreview(ordered, axis, dimensions, previewOnly) {
     offset = sourceEnd;
   }
 
-  const description = `${previewOnly ? "Preview-only rendering" : "Stitched image preview"}: ${axis} stitch, ${dimensions.width} by ${dimensions.height} pixels.`;
+  const description = t("{p0}: {p1}, {p2} × {p3} px.", { p0: previewOnly ? t("Preview-only rendering") : t("Stitched image preview"), p1: t(axis === "horizontal" ? "Horizontal" : "Vertical"), p2: dimensions.width, p3: dimensions.height });
   canvas.setAttribute("aria-label", description);
   elements.previewDescription.textContent = description;
   elements.previewDimensions.textContent = `${dimensions.width}x${dimensions.height} px`;
@@ -603,10 +604,10 @@ function composeResult(ordered, axis, dimensions) {
   canvas.width = dimensions.width;
   canvas.height = dimensions.height;
   if (canvas.width !== dimensions.width || canvas.height !== dimensions.height) {
-    throw new Error("the browser cannot allocate a canvas at the requested dimensions");
+    throw new Error(t("the browser cannot allocate a canvas at the requested dimensions"));
   }
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("2D canvas is unavailable for the full-resolution result");
+  if (!context) throw new Error(t("2D canvas is unavailable for the full-resolution result"));
   context.fillStyle = "#FFFFFF";
   context.fillRect(0, 0, dimensions.width, dimensions.height);
   let offset = 0;
@@ -626,18 +627,18 @@ async function runStitch() {
   if (busy || pendingDecodes > 0) return;
   const records = validFiles();
   if (records.length < 2) {
-    setError("At least two valid images are required.");
+    setError(t("At least two valid images are required."));
     return;
   }
   const requestedAxis = selectedAxis();
   const k = validateStripWidth(true);
   if (k === null) {
-    setError("Fix the strip width before stitching.");
+    setError(t("Fix the strip width before stitching."));
     elements.stripWidth.focus();
     return;
   }
   if (records.length > 12) {
-    setError(`This job has ${records.length} valid images. The exact optimizer is limited to 12; split the job into smaller groups.`);
+    setError(t("This job has {p0} valid images. The exact optimizer is limited to 12; split the job into smaller groups.", { p0: records.length }));
     return;
   }
   if (requestedAxis !== "auto") {
@@ -652,11 +653,11 @@ async function runStitch() {
   busy = true;
   renderFiles();
   updateControls();
-  setStatus("Preparing image features…", "loading");
+  setStatus(t("Preparing image features…"), "loading");
   try {
     const features = [];
     for (let index = 0; index < records.length; index += 1) {
-      setStatus(`Preparing image features (${index + 1} of ${records.length})…`, "loading");
+      setStatus(t("Preparing image features ({p0} of {p1})…", { p0: index + 1, p1: records.length }), "loading");
       await yieldToBrowser();
       const context = records[index].canvas.getContext("2d", { willReadFrequently: true });
       const imageData = context.getImageData(0, 0, records[index].width, records[index].height);
@@ -674,25 +675,25 @@ async function runStitch() {
     const previewOnly = elements.previewOnly.checked;
     if (previewOnly) {
       drawPreview(ordered, solution.selected.axis, dimensions, true);
-      setStatus("Preview only — no file generated.", "success");
+      setStatus(t("Preview only — no file generated."), "success");
     } else {
       try {
         resultCanvas = composeResult(ordered, solution.selected.axis, dimensions);
         drawPreview(ordered, solution.selected.axis, dimensions, false);
-        setStatus(`Stitch ready: ${dimensions.width}x${dimensions.height} pixels. Choose JPEG or PNG to download.`, "success");
+        setStatus(t("Stitch ready: {p0}x{p1} pixels. Choose JPEG or PNG to download.", { p0: dimensions.width, p1: dimensions.height }), "success");
       } catch (error) {
         if (resultCanvas) {
           resultCanvas.width = 0;
           resultCanvas.height = 0;
           resultCanvas = null;
         }
-        setStatus("The order and costs are ready, but a full-resolution preview could not be created.", "warning");
-        setError(`Could not create the full-resolution stitched image: ${error.message} Try Preview only or use fewer/smaller images.`);
+        setStatus(t("The order and costs are ready, but a full-resolution preview could not be created."), "warning");
+        setError(t("Could not create the full-resolution stitched image: {p0} Try Preview only or use fewer/smaller images.", { p0: error.message }));
       }
     }
   } catch (error) {
     setError(error instanceof Error ? error.message : String(error));
-    setStatus("Stitching could not be completed. Your files and options are still selected.", "error");
+    setStatus(t("Stitching could not be completed. Your files and options are still selected."), "error");
   } finally {
     busy = false;
     renderFiles();
@@ -707,7 +708,7 @@ function downloadBlob(mimeType, extension, quality) {
   elements.downloadPng.disabled = true;
   renderFiles();
   updateControls();
-  setStatus(`Preparing ${extension.toUpperCase()} download…`, "loading");
+  setStatus(t("Preparing {p0} download…", { p0: extension.toUpperCase() }), "loading");
   try {
     resultCanvas.toBlob((blob) => {
       downloading = false;
@@ -716,8 +717,8 @@ function downloadBlob(mimeType, extension, quality) {
       renderFiles();
       updateControls();
       if (!blob) {
-        setError(`The browser could not encode this image as ${extension.toUpperCase()}.`);
-        setStatus("Download failed; try the other image format.", "error");
+        setError(t("The browser could not encode this image as {p0}.", { p0: extension.toUpperCase() }));
+        setStatus(t("Download failed; try the other image format."), "error");
         return;
       }
       let url;
@@ -737,23 +738,23 @@ function downloadBlob(mimeType, extension, quality) {
           downloadUrls.delete(url);
         }, 60_000);
         setError("");
-        setStatus(`${extension.toUpperCase()} download started.`, "success");
+        setStatus(t("{p0} download started.", { p0: extension.toUpperCase() }), "success");
       } catch (error) {
         anchor?.remove();
         if (url) {
           URL.revokeObjectURL(url);
           downloadUrls.delete(url);
         }
-        setError(`Could not start the ${extension.toUpperCase()} download: ${error.message}`);
-        setStatus("Download failed.", "error");
+        setError(t("Could not start the {p0} download: {p1}", { p0: extension.toUpperCase(), p1: error.message }));
+        setStatus(t("Download failed."), "error");
       }
     }, mimeType, quality);
   } catch (error) {
     downloading = false;
     renderFiles();
     updateControls();
-    setError(`Could not encode the ${extension.toUpperCase()} download: ${error.message}`);
-    setStatus("Download failed.", "error");
+    setError(t("Could not encode the {p0} download: {p1}", { p0: extension.toUpperCase(), p1: error.message }));
+    setStatus(t("Download failed."), "error");
   }
 }
 

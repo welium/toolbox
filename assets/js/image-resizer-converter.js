@@ -1,3 +1,5 @@
+import { t, locale } from "./i18n.js";
+
 import { bindFileInput, formatBytes } from "./file-tools.js";
 
 const get = (id) => document.getElementById(id);
@@ -37,7 +39,7 @@ function crop() {
   const [x, y, w, h] = values;
   if (!values.every(Number.isSafeInteger) || x < 0 || y < 0 || w < 1 || h < 1
       || x + w > source.width || y + h > source.height) {
-    throw new Error("Crop must use whole pixels and stay inside the original image.");
+    throw new Error(t("Crop must use whole pixels and stay inside the original image."));
   }
   return { x, y, w, h };
 }
@@ -48,7 +50,7 @@ function drawCrop() {
   canvas.width = Math.max(1, Math.round(source.width * scale));
   canvas.height = Math.max(1, Math.round(source.height * scale));
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas rendering is not available in this browser.");
+  if (!ctx) throw new Error(t("Canvas rendering is not available in this browser."));
   ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
   const { x, y, w, h } = crop();
   const sx = canvas.width / source.width;
@@ -80,12 +82,12 @@ async function loadFiles(files) {
   source = null;
   file = null;
   form.hidden = true;
-  get("file-details").textContent = "No image selected.";
+  get("file-details").textContent = t("No image selected.");
   if (files.length !== 1) {
-    showError("Choose exactly one image at a time.");
+    showError(t("Choose exactly one image at a time."));
     return;
   }
-  status.textContent = "Decoding image…";
+  status.textContent = t("Decoding image…");
   try {
     const decoded = await createImageBitmap(files[0], { imageOrientation: "from-image" });
     if (current !== revision) {
@@ -97,14 +99,14 @@ async function loadFiles(files) {
     resetCrop();
     get("file-details").textContent = `${file.name} — ${source.width} × ${source.height} px — ${formatBytes(file.size)}`;
     form.hidden = false;
-    status.textContent = "Image ready. Set the crop and output options.";
+    status.textContent = t("Image ready. Set the crop and output options.");
   } catch (cause) {
     if (current !== revision) return;
     if (source) source.close();
     source = null;
     file = null;
     status.textContent = "";
-    showError(`Could not decode this image. Use a valid browser-supported image. ${cause.message}`);
+    showError(t("Could not decode this image. Use a valid browser-supported image. {p0}", { p0: cause.message }));
   }
 }
 
@@ -146,24 +148,24 @@ form.addEventListener("submit", async (event) => {
     const outW = width.valueAsNumber;
     const outH = height.valueAsNumber;
     if (![outW, outH].every((n) => Number.isSafeInteger(n) && n > 0)) {
-      throw new Error("Output dimensions must be positive whole pixels.");
+      throw new Error(t("Output dimensions must be positive whole pixels."));
     }
     // Bound allocation before handing dimensions to the browser's canvas implementation.
     if (outW > 16384 || outH > 16384 || outW * outH > 32_000_000) {
-      throw new Error("Output is too large. Use at most 16,384 pixels per side and 32 million pixels total.");
+      throw new Error(t("Output is too large. Use at most 16,384 pixels per side and 32 million pixels total."));
     }
     const mime = format.value;
     const q = quality.valueAsNumber;
     if (mime !== "image/png" && (!Number.isInteger(q) || q < 1 || q > 100)) {
-      throw new Error("Quality must be a whole percentage from 1 to 100.");
+      throw new Error(t("Quality must be a whole percentage from 1 to 100."));
     }
     get("convert-button").disabled = true;
-    status.textContent = "Creating image…";
+    status.textContent = t("Creating image…");
     canvas = document.createElement("canvas");
     canvas.width = outW;
     canvas.height = outH;
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Could not allocate the output canvas. Try smaller dimensions.");
+    if (!ctx) throw new Error(t("Could not allocate the output canvas. Try smaller dimensions."));
     if (mime === "image/jpeg") {
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, outW, outH);
@@ -172,8 +174,8 @@ form.addEventListener("submit", async (event) => {
     ctx.drawImage(source, x, y, w, h, 0, 0, outW, outH);
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, q / 100));
     if (current !== revision) return;
-    if (!blob) throw new Error("Image encoding failed. Try smaller dimensions.");
-    if (blob.type !== mime) throw new Error("This browser cannot export the selected format. Choose PNG or JPEG instead.");
+    if (!blob) throw new Error(t("Image encoding failed. Try smaller dimensions."));
+    if (blob.type !== mime) throw new Error(t("This browser cannot export the selected format. Choose PNG or JPEG instead."));
     resultUrl = URL.createObjectURL(blob);
     get("result-preview").src = resultUrl;
     const extension = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[mime];
@@ -181,10 +183,10 @@ form.addEventListener("submit", async (event) => {
     get("download-image").href = resultUrl;
     get("download-image").download = `${name}-${outW}x${outH}.${extension}`;
     get("result-details").textContent = `${outW} × ${outH} px — ${extension.toUpperCase()} — ${formatBytes(blob.size)}`;
-    const change = file.size ? `${Math.abs((blob.size / file.size - 1) * 100).toFixed(1)}% ${blob.size <= file.size ? "smaller" : "larger"} than the original` : "Original file is empty";
-    get("size-comparison").textContent = `Original: ${formatBytes(file.size)}. Output: ${formatBytes(blob.size)} (${change}).`;
+    const change = file.size ? t(blob.size <= file.size ? "{p0}% smaller than the original" : "{p0}% larger than the original", { p0: Math.abs((blob.size / file.size - 1) * 100).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }) : t("Original file is empty");
+    get("size-comparison").textContent = t("Original: {p0}. Output: {p1} ({p2}).", { p0: formatBytes(file.size), p1: formatBytes(blob.size), p2: change });
     get("result-section").hidden = false;
-    status.textContent = "Image created. Ready to download.";
+    status.textContent = t("Image created. Ready to download.");
   } catch (cause) {
     if (current === revision) {
       status.textContent = "";

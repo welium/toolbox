@@ -62,7 +62,7 @@ async (page) => {
 
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(base);
-  assert(await page.locator('a[href="tools/remove-image-borders/"]').count() === 1, "Standalone border tool should be registered");
+  assert(await page.locator('a[href$="/tools/remove-image-borders/?lang=en"]').count() === 1, "Standalone border tool should be registered");
   await page.goto(`${base}/tools/remove-image-borders/`);
   assert(!await page.locator("#border-form").isVisible(), "Processing should require a selected image");
   assert(await page.locator("#output-format").inputValue() === "image/jpeg", "Default format should be JPG");

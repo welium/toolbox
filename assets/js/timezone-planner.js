@@ -20,7 +20,7 @@ export function utcDay(date) {
   return time;
 }
 
-export function buildSlots(date, duration, participants) {
+export function buildSlots(date, duration, participants, locale = "en-GB") {
   const start = utcDay(date);
   if (![30, 60, 90, 120].includes(duration)) throw new Error("Choose a supported meeting duration.");
   if (participants.length < 1 || participants.length > 6) throw new Error("Add between 1 and 6 timezones.");
@@ -28,12 +28,12 @@ export function buildSlots(date, duration, participants) {
     const zone = canonicalZone(person.zone);
     const from = minutesOfDay(person.start);
     const until = minutesOfDay(person.end);
-    if (from >= until) throw new Error(`${zone}: working hours must end after they start on the same local day.`);
+    if (from >= until) throw new Error("Working hours must end after they start on the same local day.");
     if (!["weekdays", "everyday"].includes(person.days)) throw new Error("Choose weekdays or every day.");
     const clock = new Intl.DateTimeFormat("en-GB", {
       timeZone: zone, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
     });
-    const display = new Intl.DateTimeFormat("en-GB", {
+    const display = new Intl.DateTimeFormat(locale, {
       timeZone: zone, weekday: "short", year: "numeric", month: "short", day: "2-digit",
       hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZoneName: "shortOffset",
     });

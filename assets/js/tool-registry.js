@@ -1,51 +1,53 @@
+import { t, localizedUrl } from "./i18n.js";
+
 export const toolRegistry = [
   {
     id: "stitch-split-img",
-    title: "Stitch Split Img",
+    title: t("Stitch Split Img"),
     href: "tools/stitch-split-img/",
-    description: "Find the order of image slices and stitch them together in your browser.",
+    description: t("Find the order of image slices and stitch them together in your browser."),
     status: "enabled",
   },
   {
     id: "image-resizer-converter",
-    title: "Image Resizer & Converter",
+    title: t("Image Resizer & Converter"),
     href: "tools/image-resizer-converter/",
-    description: "Crop, resize, and convert an image to PNG, JPEG, or WebP locally.",
+    description: t("Crop, resize, and convert an image to PNG, JPEG, or WebP locally."),
     status: "enabled",
   },
   {
     id: "file-hash-calculator",
-    title: "File Hash Calculator",
+    title: t("File Hash Calculator"),
     href: "tools/file-hash-calculator/",
-    description: "Calculate a file’s SHA-256 checksum and compare it with an expected hash.",
+    description: t("Calculate a file’s SHA-256 checksum and compare it with an expected hash."),
     status: "enabled",
   },
   {
     id: "decision-wheel",
-    title: "Decision Wheel",
+    title: t("Decision Wheel"),
     href: "tools/decision-wheel/",
-    description: "Add choices, adjust their odds, and spin a wheel to decide.",
+    description: t("Add choices, adjust their odds, and spin a wheel to decide."),
     status: "enabled",
   },
   {
     id: "probability-simulator",
-    title: "Probability Simulator",
+    title: t("Probability Simulator"),
     href: "tools/probability-simulator/",
-    description: "Explore coins, dice, and Monty Hall with live results and theoretical odds.",
+    description: t("Explore coins, dice, and Monty Hall with live results and theoretical odds."),
     status: "enabled",
   },
   {
     id: "timezone-meeting-planner",
-    title: "Timezone Meeting Planner",
+    title: t("Timezone Meeting Planner"),
     href: "tools/timezone-meeting-planner/",
-    description: "Compare local times and find shared working hours across timezones.",
+    description: t("Compare local times and find shared working hours across timezones."),
     status: "enabled",
   },
   {
     id: "remove-image-borders",
-    title: "Remove Image Borders",
+    title: t("Remove Image Borders"),
     href: "tools/remove-image-borders/",
-    description: "Automatically trim solid-color image borders, one image or a batch at a time.",
+    description: t("Automatically trim solid-color image borders, one image or a batch at a time."),
     status: "enabled",
   },
 ];
@@ -69,8 +71,8 @@ if (toolList) {
     if (tool.status === "enabled" && tool.href) {
       const link = document.createElement("a");
       link.className = "pill-link pill-link--secondary";
-      link.href = tool.href;
-      link.textContent = "Open tool";
+      link.href = localizedUrl(tool.href);
+      link.textContent = t("Open tool");
       card.append(link);
     }
 

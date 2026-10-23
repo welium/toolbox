@@ -16,7 +16,7 @@ async (page) => {
 
   await page.goto(base);
   for (const tool of ["decision-wheel", "probability-simulator", "timezone-meeting-planner"]) {
-    assert(await page.locator(`a[href="tools/${tool}/"]`).count() === 1, `Home should list ${tool}`);
+    assert(await page.locator(`a[href$="/tools/${tool}/?lang=en"]`).count() === 1, `Home should list ${tool}`);
   }
   await page.goto(`${base}/tools/decision-wheel/`);
   assert(await page.locator("#choice-odds li").count() === 4, "Default wheel should have four choices");

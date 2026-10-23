@@ -8,38 +8,39 @@
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/components.css">
+    <script type="module" src="assets/js/i18n.js"></script>
   </head>
   <body>
     <header class="site-header">
       <span class="site-name">Toolbox</span>
-      <nav class="site-nav" aria-label="Main navigation">
-        <a class="home-link" href="./" aria-current="page">Home</a>
+      <nav class="site-nav" aria-label="Main navigation" data-i18n-aria-label="Main navigation">
+        <a class="home-link" href="./" aria-current="page" data-i18n="Home">Home</a>
       </nav>
-      <p class="header-note">Files stay in your browser</p>
+      <p class="header-note" data-i18n="Files stay in your browser">Files stay in your browser</p>
     </header>
 
     <main class="page-content">
       <section class="hero" aria-labelledby="page-title">
-        <p class="eyebrow">A stateless collection of browser tools</p>
-        <h1 id="page-title">Useful tools. Nothing to install.</h1>
-        <p class="hero-purpose">Small, focused tools that run entirely in your browser.</p>
-        <a class="pill-link pill-link--primary" href="tools/stitch-split-img/">Open Stitch Split Img</a>
+        <p class="eyebrow" data-i18n="A stateless collection of browser tools">A stateless collection of browser tools</p>
+        <h1 id="page-title" data-i18n="Useful tools. Nothing to install.">Useful tools. Nothing to install.</h1>
+        <p class="hero-purpose" data-i18n="Small, focused tools that run entirely in your browser.">Small, focused tools that run entirely in your browser.</p>
+        <a class="pill-link pill-link--primary" href="tools/stitch-split-img/" data-i18n="Open Stitch Split Img">Open Stitch Split Img</a>
       </section>
 
       <section class="registry-section" aria-labelledby="tools-heading">
         <div class="section-heading">
-          <h2 id="tools-heading">Tools</h2>
-          <p>Pick a tool for the task at hand.</p>
+          <h2 id="tools-heading" data-i18n="Tools">Tools</h2>
+          <p data-i18n="Pick a tool for the task at hand.">Pick a tool for the task at hand.</p>
         </div>
         <ul class="tool-grid" id="tool-list" aria-labelledby="tools-heading"></ul>
         <noscript>
-          <p class="script-note">Turn on JavaScript to view the tool directory.</p>
+          <p class="script-note" data-i18n="Turn on JavaScript to view the tool directory.">Turn on JavaScript to view the tool directory.</p>
         </noscript>
       </section>
     </main>
 
     <footer class="site-footer">
-      <p>Private by design: files stay in your browser and nothing is stored.</p>
+      <p data-i18n="Private by design: files stay in your browser and nothing is stored.">Private by design: files stay in your browser and nothing is stored.</p>
     </footer>
     <script type="module" src="assets/js/tool-registry.js"></script>
   </body>

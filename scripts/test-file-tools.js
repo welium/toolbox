@@ -33,7 +33,7 @@ async (page) => {
 
   await page.goto(base);
   for (const id of ["stitch-split-img", "image-resizer-converter", "file-hash-calculator"]) {
-    assert(await page.locator(`a[href="tools/${id}/"]`).count() >= 1, `Home should register ${id}`);
+    assert(await page.locator(`a[href$="/tools/${id}/?lang=en"]`).count() >= 1, `Home should register ${id}`);
   }
   await page.goto(`${base}/tools/image-resizer-converter/`);
   const fixture = await page.evaluate(() => {

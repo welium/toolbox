@@ -1,3 +1,5 @@
+import { t } from "./i18n.js";
+
 import { bindFileInput, formatBytes } from "./file-tools.js";
 import { detectImageBorder, borderColorLabel } from "./image-borders.js";
 import { createZip } from "./zip.js";
@@ -40,7 +42,7 @@ function drawSource(region = null) {
   canvas.width = Math.max(1, Math.round(source.width * scale));
   canvas.height = Math.max(1, Math.round(source.height * scale));
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas rendering is not available in this browser.");
+  if (!ctx) throw new Error(t("Canvas rendering is not available in this browser."));
   ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
   if (!region) return;
   const sx = canvas.width / source.width;
@@ -81,20 +83,20 @@ async function loadFiles(files) {
   form.hidden = true;
   get("source-section").hidden = true;
   get("source-preview").width = get("source-preview").height = 0;
-  get("file-details").textContent = "No image selected.";
+  get("file-details").textContent = t("No image selected.");
   get("batch-section").hidden = true;
-  button.textContent = "Detect & remove borders";
+  button.textContent = t("Detect & remove borders");
   if (files.length > 1) {
     batchFiles = files;
     form.hidden = false;
     button.disabled = false;
-    button.textContent = `Detect & remove borders (${files.length} images)`;
-    get("file-details").textContent = `${files.length} images — ${formatBytes(files.reduce((sum, item) => sum + item.size, 0))}`;
-    status.textContent = "Batch ready. Each image will be trimmed separately using the options below.";
+    button.textContent = t("Detect & remove borders ({p0} images)", { p0: files.length });
+    get("file-details").textContent = t("{p0} images — {p1}", { p0: files.length, p1: formatBytes(files.reduce((sum, item) => sum + item.size, 0)) });
+    status.textContent = t("Batch ready. Each image will be trimmed separately using the options below.");
     return;
   }
   if (!files.length) return;
-  status.textContent = "Decoding image…";
+  status.textContent = t("Decoding image…");
   status.dataset.state = "loading";
   try {
     const decoded = await createImageBitmap(files[0], { imageOrientation: "from-image" });
@@ -107,7 +109,7 @@ async function loadFiles(files) {
     get("source-section").hidden = false;
     form.hidden = false;
     button.disabled = false;
-    status.textContent = "Image ready. Detect its border color to create a trimmed preview.";
+    status.textContent = t("Image ready. Detect its border color to create a trimmed preview.");
     status.dataset.state = "";
   } catch (cause) {
     if (current !== revision) return;
@@ -115,7 +117,7 @@ async function loadFiles(files) {
     source = null;
     file = null;
     status.textContent = "";
-    showError(`Could not decode this image. Use a valid browser-supported image. ${cause.message}`);
+    showError(t("Could not decode this image. Use a valid browser-supported image. {p0}", { p0: cause.message }));
   }
 }
 
@@ -129,30 +131,36 @@ form.addEventListener("input", () => {
 function readOptions() {
   const tolerance = get("border-tolerance").valueAsNumber;
   if (!Number.isInteger(tolerance) || tolerance < 0 || tolerance > 64) {
-    throw new Error("Color tolerance must be a whole number from 0 to 64.");
+    throw new Error(t("Color tolerance must be a whole number from 0 to 64."));
   }
   const mime = format.value;
   if (!["image/jpeg", "image/png", "image/webp"].includes(mime)) {
-    throw new Error("Choose JPG, PNG, or WebP.");
+    throw new Error(t("Choose JPG, PNG, or WebP."));
   }
   const q = quality.valueAsNumber;
   if (mime !== "image/png" && (!Number.isInteger(q) || q < 1 || q > 100)) {
-    throw new Error("Quality must be a whole percentage from 1 to 100.");
+    throw new Error(t("Quality must be a whole percentage from 1 to 100."));
   }
   return { tolerance, mime, q };
 }
 
 function noTrimMessage(detected) {
   return detected.kind === "uniform"
-    ? `The entire image matches ${borderColorLabel(detected.color)} at this tolerance. Nothing trimmed. Try a lower tolerance.`
+    ? t("The entire image matches {p0} at this tolerance. Nothing trimmed. Try a lower tolerance.", { p0: colorLabel(detected.color) })
     : detected.kind === "ambiguous"
-      ? "Outer edges have different solid colors. Nothing trimmed; use Image Resizer & Converter for a manual crop."
-      : "No removable solid-color border found. Nothing trimmed. Try a different tolerance or use a manual crop.";
+      ? t("Outer edges have different solid colors. Nothing trimmed; use Image Resizer & Converter for a manual crop.")
+      : t("No removable solid-color border found. Nothing trimmed. Try a different tolerance or use a manual crop.");
+}
+
+function colorLabel(color) {
+  const label = borderColorLabel(color);
+  if (label === "transparent") return t("transparent");
+  return label.replace(/\((\d+)% opacity\)/, (_, opacity) => t("({p0}% opacity)", { p0: opacity }));
 }
 
 function trimReport(detected) {
   const removed = detected.removed;
-  return `Border color: ${borderColorLabel(detected.color)}. Removed ${removed.left} px left, ${removed.top} px top, ${removed.right} px right, ${removed.bottom} px bottom.`;
+  return t("Border color: {p0}. Removed {p1} px left, {p2} px top, {p3} px right, {p4} px bottom.", { p0: colorLabel(detected.color), p1: removed.left, p2: removed.top, p3: removed.right, p4: removed.bottom });
 }
 
 function outputName(input, detected, extension) {
@@ -165,13 +173,13 @@ async function trimImage(image, { tolerance, mime, q }, current) {
   let outputCanvas;
   try {
     if (image.width > 16384 || image.height > 16384 || image.width * image.height > 32_000_000) {
-      throw new Error("Border detection supports at most 16,384 pixels per side and 32 million pixels total.");
+      throw new Error(t("Border detection supports at most 16,384 pixels per side and 32 million pixels total."));
     }
     analysisCanvas = document.createElement("canvas");
     analysisCanvas.width = image.width;
     analysisCanvas.height = image.height;
     const ctx = analysisCanvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) throw new Error("Could not allocate a canvas for border detection. Try a smaller image.");
+    if (!ctx) throw new Error(t("Could not allocate a canvas for border detection. Try a smaller image."));
     ctx.drawImage(image, 0, 0);
     const detected = await detectImageBorder(ctx, image.width, image.height, tolerance, () => current === revision);
     if (!detected || current !== revision) return;
@@ -183,7 +191,7 @@ async function trimImage(image, { tolerance, mime, q }, current) {
     outputCanvas.width = w;
     outputCanvas.height = h;
     const output = outputCanvas.getContext("2d");
-    if (!output) throw new Error("Could not allocate the trimmed image canvas. Try a smaller image.");
+    if (!output) throw new Error(t("Could not allocate the trimmed image canvas. Try a smaller image."));
     if (mime === "image/jpeg") {
       output.fillStyle = "#FFFFFF";
       output.fillRect(0, 0, w, h);
@@ -191,8 +199,8 @@ async function trimImage(image, { tolerance, mime, q }, current) {
     output.drawImage(image, x, y, w, h, 0, 0, w, h);
     const blob = await new Promise((resolve) => outputCanvas.toBlob(resolve, mime, q / 100));
     if (current !== revision) return;
-    if (!blob) throw new Error("Image encoding failed. Try a smaller image.");
-    if (blob.type !== mime) throw new Error("This browser cannot export the selected format. Choose PNG or JPEG instead.");
+    if (!blob) throw new Error(t("Image encoding failed. Try a smaller image."));
+    if (blob.type !== mime) throw new Error(t("This browser cannot export the selected format. Choose PNG or JPEG instead."));
     const extension = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[mime];
     return { detected, blob, extension };
   } finally {
@@ -215,10 +223,10 @@ async function processBatch(options, current) {
     heading.textContent = input.name;
     const details = document.createElement("p");
     details.className = "field-hint";
-    details.textContent = "Processing…";
+    details.textContent = t("Processing…");
     card.append(heading, details);
     get("batch-results").append(card);
-    status.textContent = `Processing image ${index + 1} of ${files.length}: ${input.name}`;
+    status.textContent = t("Processing image {p0} of {p1}: {p2}", { p0: index + 1, p1: files.length, p2: input.name });
     let image;
     try {
       image = await createImageBitmap(input, { imageOrientation: "from-image" });
@@ -241,7 +249,7 @@ async function processBatch(options, current) {
       frame.className = "preview-frame";
       const preview = document.createElement("img");
       preview.src = url;
-      preview.alt = `Trimmed preview of ${input.name}`;
+      preview.alt = t("Trimmed preview of {p0}", { p0: input.name });
       preview.loading = "lazy";
       frame.append(preview);
       const actions = document.createElement("div");
@@ -250,14 +258,14 @@ async function processBatch(options, current) {
       download.className = "pill-link pill-link--secondary";
       download.href = url;
       download.download = name;
-      download.textContent = "Download trimmed image";
+      download.textContent = t("Download trimmed image");
       actions.append(download);
       card.append(frame, actions);
     } catch (cause) {
       if (current !== revision) return;
       failed++;
       details.className = "tool-error";
-      details.textContent = `Could not process this image. ${cause.message}`;
+      details.textContent = t("Could not process this image. {p0}", { p0: cause.message });
     } finally {
       if (image) image.close();
     }
@@ -265,7 +273,7 @@ async function processBatch(options, current) {
   if (current !== revision) return;
   get("download-batch").disabled = batchResults.length === 0;
   status.dataset.state = skipped || failed ? "warning" : "success";
-  status.textContent = `Batch complete: ${batchResults.length} trimmed, ${skipped} skipped, ${failed} failed. Review the previews before downloading.`;
+  status.textContent = t("Batch complete: {p0} trimmed, {p1} skipped, {p2} failed. Review the previews before downloading.", { p0: batchResults.length, p1: skipped, p2: failed });
 }
 
 form.addEventListener("submit", async (event) => {
@@ -276,7 +284,7 @@ form.addEventListener("submit", async (event) => {
   try {
     const options = readOptions();
     button.disabled = true;
-    status.textContent = "Detecting border color and content bounds…";
+    status.textContent = t("Detecting border color and content bounds…");
     status.dataset.state = "loading";
     if (batchFiles.length) {
       await processBatch(options, current);
@@ -298,15 +306,15 @@ form.addEventListener("submit", async (event) => {
     get("download-image").download = outputName(file, detected, extension);
     get("border-report").textContent = trimReport(detected);
     get("result-dimensions").textContent = `${w} × ${h} px`;
-    get("result-details").textContent = `${extension.toUpperCase()} — ${formatBytes(blob.size)}. Source: ${formatBytes(file.size)}. Pixels are cropped, not resized; re-encoding does not preserve source metadata.`;
+    get("result-details").textContent = t("{p0} — {p1}. Source: {p2}. Pixels are cropped, not resized; re-encoding does not preserve source metadata.", { p0: extension.toUpperCase(), p1: formatBytes(blob.size), p2: formatBytes(file.size) });
     drawSource(detected.crop);
     get("result-section").hidden = false;
     status.dataset.state = "success";
-    status.textContent = "Borders removed. Review the original and trimmed previews before downloading.";
+    status.textContent = t("Borders removed. Review the original and trimmed previews before downloading.");
   } catch (cause) {
     if (current === revision) {
       status.textContent = "";
-      showError(`Could not remove borders. ${cause.message}`);
+      showError(t("Could not remove borders. {p0}", { p0: cause.message }));
     }
   } finally {
     if (current === revision) button.disabled = false;
@@ -329,7 +337,7 @@ get("download-batch").addEventListener("click", async () => {
     link.download = "trimmed-images.zip";
     link.click();
   } catch (cause) {
-    if (current === revision) showError(`Could not create batch download. ${cause.message} Individual downloads are still available.`);
+    if (current === revision) showError(t("Could not create batch download. {p0} Individual downloads are still available.", { p0: cause.message }));
   } finally {
     if (current === revision) downloadButton.disabled = false;
   }

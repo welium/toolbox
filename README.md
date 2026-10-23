@@ -12,6 +12,14 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000/>. Stop the server with `Ctrl+C`. Any static file server can be used; the site does not need a build step.
 
+## Languages
+
+Use the language menu in the header to choose English, Japanese, Simplified Chinese, Traditional Chinese, Korean, French, or Spanish. The site initially uses a supported browser language, falling back to English. Chinese regional preferences such as `zh-TW` and `zh-HK` select Traditional Chinese; `zh-CN` and `zh-SG` select Simplified Chinese.
+
+The `lang` URL parameter overrides browser preferences, for example `/?lang=ja` or `/tools/file-hash-calculator/?lang=zh-Hant`. Links preserve the selected language without cookies or browser storage. Changing language reloads the page and clears current tool inputs and results.
+
+Shared language handling lives in `assets/js/i18n.js`; translation catalogs live in `assets/js/locales/`. HTML text and accessibility attributes use `data-i18n` attributes; generated messages use `t(message, values)` with named placeholders such as `{p0}`. English source messages provide the fallback. Add each new message to all six catalogs and retain its placeholders. Tool titles, instructions, status messages, validation, and meeting display dates are localized; user-entered text, filenames, and IANA timezone identifiers retain their original values.
+
 ## Deploy to Cloudflare Workers
 
 Cloudflare Workers serves this site as static assets; there is no Worker script or server-side image processing. The `dist/` directory is generated for deployment and contains only the public site files, not repository documentation or configuration.
@@ -113,6 +121,7 @@ Image-border and timezone logic tests use only Node.js:
 node --test scripts/test-timezone-planner.mjs
 node --test scripts/test-image-borders.mjs
 node --test scripts/test-zip.mjs
+node --test scripts/test-i18n.mjs
 ```
 
 They cover seasonal/DST offsets, different DST transition dates, repeated/skipped hours, fractional-hour offsets, local-day rollover, full-duration availability, and input validation.
@@ -128,10 +137,13 @@ playwright-cli open http://127.0.0.1:8000/
 playwright-cli run-code --filename=scripts/test-file-tools.js
 playwright-cli run-code --filename=scripts/test-interactive-tools.js
 playwright-cli run-code --filename=scripts/test-remove-image-borders.js
+playwright-cli run-code --filename=scripts/test-i18n.js
 playwright-cli close
 ```
 
 The file-tool tests cover crop pixels, aspect-ratio controls, image formats/transparency, downloads, validation, failure handling, asynchronous stale-result protection, SHA-256 known vectors, comparison, clipboard/fallback, file drops, and mobile overflow. The interactive-tool tests cover weighted selections, simulation outcomes and cancellation, planner controls and meeting summaries, and mobile layouts. The border-tool tests cover JPG/quality-100 defaults, near-matching rims, detection, trimmed pixels and downloads, formats, no-border cases, option invalidation, stale results, failures, batch drops/previews/ZIP/duplicate names/partial failure/cancellation, and mobile overflow. The CLI is a development-only test tool; the deployed app has no runtime dependencies or build requirement.
+
+The i18n Node tests verify regional language matching, catalog coverage, and placeholder consistency. Browser tests visit all eight pages in all seven languages and check generated results, navigation, language switching, and mobile overflow.
 
 ## Project conventions
 
